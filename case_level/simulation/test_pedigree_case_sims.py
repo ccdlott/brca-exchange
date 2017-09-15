@@ -1,6 +1,5 @@
 import pytest
 import unittest
-import pdb
 from case_sims import Pedigree, year
 
 class test_pedigree_methods(unittest.TestCase):
@@ -97,11 +96,10 @@ class test_pedigree_methods(unittest.TestCase):
         2. Gender for each parent is correct
         3. FamID for person and parents is equal
         4. Name and IndivID are greater than zero and are equal
-        5. Target is equal to zero
-        6. Age in correct range based on child's age
-        7. Birth year set correctly based on age
-        8. Parent status changed to dead if dead
-        9. All other variables set to zero
+        5. Age in correct range based on child's age
+        6. Birth year set correctly based on age
+        7. Parent status changed to dead if dead
+        8. All other variables set to zero
         '''
         ped = Pedigree()
         self.person[4] = 2 
@@ -127,8 +125,6 @@ class test_pedigree_methods(unittest.TestCase):
                 elif name == "IndivID":
                     self.assertGreaterEqual(parent[index], 1)
                     self.assertEqual(parent[index], parent[index-2])
-                elif name == "Target":
-                    self.assertEqual(0, parent[index])
                 elif name == "Sex":
                     self.assertIn(parent[index], self.gender)
                 elif name =="Age":
@@ -152,11 +148,10 @@ class test_pedigree_methods(unittest.TestCase):
         1. Gender of partner is correct
         2. FamID for person and partner is equal
         3. Name and IndivID are greater than zero and are equal
-        4. Target is equal to zero
-        5. Age in correct range based on person's age
-        6. Birth year is set correctly based on age
-        7. Dead status set to the correct value
-        8. All other variables are equal to zero
+        4. Age in correct range based on person's age
+        5. Birth year is set correctly based on age
+        6. Dead status set to the correct value
+        7. All other variables are equal to zero
         '''
         ped = Pedigree()
         
@@ -178,8 +173,6 @@ class test_pedigree_methods(unittest.TestCase):
             elif name == "IndivID":
                 self.assertGreaterEqual(partner[index], 1)
                 self.assertEqual(partner[index], partner[index-2])
-            elif name == "Target":
-                self.assertEqual(0, partner[index])
             elif name == "Sex":
                 self.assertIn(partner[index], self.gender)
             elif name =="Age":
@@ -201,12 +194,11 @@ class test_pedigree_methods(unittest.TestCase):
         1. FathID and MothID for each child is set correctly based on gender
         2. FamID set correctly for each child
         3. Name and IndivID are equal and greater than 1
-        4. Target is set to zero
-        5. Sex of child is set to either "M" or "F"
-        6. Age is appropriate based on mother's age
-        7. Child age is never less than 1
-        8. Child birth year is set correctly
-        9. Necessary variables in list are set to zero
+        4. Sex of child is set to either "M" or "F"
+        5. Age is appropriate based on mother's age
+        6. Child age is never less than 1
+        7. Child birth year is set correctly
+        8. Necessary variables in list are set to zero
         '''
         ped = Pedigree()
 
@@ -240,8 +232,6 @@ class test_pedigree_methods(unittest.TestCase):
                     self.assertEqual(child[index], self.person2[3])
                 elif name == "MothID":
                     self.assertEqual(child[index], self.person[3])
-                elif name == "Target":
-                    self.assertEqual(child[index], 0)
                 elif name == "Sex":
                     self.assertIn(child[index], self.gender)
                 elif name == "Age":
@@ -252,3 +242,55 @@ class test_pedigree_methods(unittest.TestCase):
                 else:
                     self.assertEqual(0, child[index])
                     
+    def test_add_siblings(self):
+        '''
+        Tests that:
+        1. Person has parents or raises ValueError
+        2. FamID is equal for person and siblings
+        3. Name and IndivID are greater than zero and equal
+        4. FathID and MothID are the same for person and siblings
+        5. Age is in the correct range based on person's age
+        6. Birth year is correctly set based on age
+        7. Dead status is set to the correct value
+        8. All other variables are equal to zero
+        '''
+        ped = Pedigree()
+
+        self.person[4] = 0
+        self.person[5] = 0
+        with self.assertRaises(ValueError):
+            siblings = ped.add_siblings(self.person)
+
+        self.person[4] = 2
+        self.person[5] = 3
+        siblings = ped.add_siblings(self.person)
+
+        for sibling in siblings:
+            for name, index in self.variable_defs.iteritems():
+                if name in self.variable_zero:
+                    self.assertEqual(sibling[index], 0)
+                elif name == "FamID":
+                    self.assertEqual(sibling[index], self.person[index])
+                elif name == "Name":
+                    self.assertGreaterEqual(sibling[index], 1)
+                elif name == "IndivID":
+                    self.assertGreaterEqual(sibling[index], 1)
+                    self.assertEqual(sibling[index], sibling[index-2])
+                elif name == "FathID":
+                    self.assertEqual(sibling[index], self.person[index])
+                elif name == "MothID":
+                    self.assertEqual(sibling[index], self.person[index])
+                elif name == "Sex":
+                    self.assertIn(sibling[index], self.gender)
+                elif name == "Age":
+                    self.assertIn(sibling[index], range(self.person[index]-15, self.person[index]+16))
+                elif name == "Birth Year":
+                    expected_birth_year = int(year) - int(sibling[index-1])
+                    self.assertEqual(expected_birth_year, sibling[index])
+                elif name == "Dead":
+                    if sibling[index+1] > 90:
+                        self.assertEqual(sibling[index], 1)
+                    else:
+                        self.assertEqual(sibling[index], 0)
+                else:
+                    self.assertEqual(sibling[index], 0)
