@@ -294,3 +294,20 @@ class test_pedigree_methods(unittest.TestCase):
                         self.assertEqual(sibling[index], 0)
                 else:
                     self.assertEqual(sibling[index], 0)
+
+    def test_make_healthy_pedigree(self):
+        '''
+        Tests that:
+        1. FamID same for every person in pedigree
+        '''
+        ped = Pedigree()
+
+        pedigree = ped.make_healthy_pedigree()
+
+        famID = pedigree[0][0]
+        
+        for person in pedigree:
+            self.assertEqual(person[0], famID)
+        
+                
+            
