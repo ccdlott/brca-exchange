@@ -1,5 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # Name: Tyler Myers (tdmyers)
+
+#don't need import division because I make values float after doing division
+#from __future__ import division
+#not sure if I need this because I'm not using from _ import _ structure
+#from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
@@ -8,6 +13,7 @@ import subprocess
 import argparse
 import os
 import exonDict
+#from io import open - added when used 3to2, not sure if I need this for code to work as expected
 
 #NOTE: subprocess, popen(part of subprocess) for script output capture,  
 ######################################################################
@@ -36,13 +42,13 @@ def getEntScore(seq):
             pipe = subprocess.Popen(["perl","score3.pl", var], stdout=subprocess.PIPE)
         result = pipe.stdout.read()
         entScore = re.findall("[+-]?\d+(?:\.\d+)?", str(result))
-        return(float(entScore[0]))
+        return float(entScore[0])
 
 """This class turns all of the lines into lists, separated by tabs. the np.vstack is used
 to create a matrix. this will be used later for selecting the column desired.dimesnion is
 len(header)x Number of variants"""
 
-class brcaParse:
+class brcaParse(object):
     def __init__(self, inFile):
         f = open(inFile, "r")
         rawLabels = f.readline()
@@ -106,7 +112,7 @@ class brcaParse:
         f = open(output, 'w')
         f.write("HGVS_cDNA\tGene\tSignificance\tSpliceSite\t5'Alt\t5'AltZScore\t5'Ref\t5'RefZScore\t3'Alt\t3'AltZScore\t3'Ref\t3'RefZScore\tupscore\tdownscore"+
                 "\tMax5'deNovo\tMax5'deNovoZScore\t5'Ref\t5'ZScore\tmaxScoreLoc\tinSpliceSite\texonLoc\tpathProb\n")
-        for i in range(0,len(self.Gene)):
+        for i in xrange(0,len(self.Gene)):
             if self.Gene[i] == "BRCA1":
                 f.write(self.id[i] +"\t" + self.Gene[i] + "\t" + self.Sig[i] + "\t")
                 loc = (int(self.Pos[i]) - int(self.BRCA1hg38Start))
@@ -164,7 +170,7 @@ class brcaParse:
                 f.write(str(pathProb) +"\n")
                 
                
-        for i in range(0,len(self.Gene)):
+        for i in xrange(0,len(self.Gene)):
             if self.Gene[i] == "BRCA2":
                 f.write(self.id[i] +"\t" + self.Gene[i] + "\t" + self.Sig[i] + "\t")
                 loc = (int(self.Pos[i]) - int(self.BRCA2hg38Start))
@@ -224,7 +230,7 @@ class brcaParse:
     def getSeqVar(self, i, loc, lenSplice, tempSeq):
         newSeqScore = []
         orgSeqScore = []
-        for j in range(0,lenSplice- 1 + (len(self.Ref[i]))):
+        for j in xrange(0,lenSplice- 1 + (len(self.Ref[i]))):
             n = loc-lenSplice+j
             o = loc+j
             if self.Gene[i] =="BRCA1":
@@ -252,17 +258,17 @@ class brcaParse:
             upStreamScore, downStreamScore = self.getSpliceMaxEnt(i,upStream, downStream)
 
             
-            for j in range(0,len(exonStart)):
+            for j in xrange(0,len(exonStart)):
                 if (abs(int(self.Pos[i])-exonStart[j])<=9):
                     exonLoc = exonStart[j]
                     return("5'", upStreamScore, downStreamScore,exonLoc)
 
-            for j in range(0,len(exonStop)):
+            for j in xrange(0,len(exonStop)):
                 if (abs(int(self.Pos[i])-exonStop[j])<=23):
                     exonLoc = exonStop[j]
                     return("3'",upStreamScore, downStreamScore,exonLoc)
                 
-            for j in range(0,len(exonStart)):
+            for j in xrange(0,len(exonStart)):
                 if (int(self.Pos[i])>=exonStart[j] and int(self.Pos[i])<=exonStop[j]):
                     return("inExon",upStreamScore, downStreamScore,0)
             else:
@@ -278,17 +284,17 @@ class brcaParse:
             exonStart.append(upStream)
             upStreamScore, downStreamScore = self.getSpliceMaxEnt(i,upStream, downStream)
            
-            for j in range(0,len(exonStop)):
+            for j in xrange(0,len(exonStop)):
                 if (abs(int(self.Pos[i])-exonStop[j])<=9):
                     exonLoc = exonStart[j]
                     return("5'",upStreamScore, downStreamScore, exonLoc)
                 
-            for j in range(0,len(exonStart)):
+            for j in xrange(0,len(exonStart)):
                 if (abs(int(self.Pos[i])-exonStart[j])<=23):
                     exonLoc = exonStart[j]                   
                     return("3'",upStreamScore, downStreamScore, exonLoc)
 
-            for j in range(0,len(exonStart)):
+            for j in xrange(0,len(exonStart)):
                 if (int(self.Pos[i])>=exonStart[j] and int(self.Pos[i])<=exonStop[j]):
                     return("inExon",upStreamScore, downStreamScore,0)
             else:
@@ -320,13 +326,13 @@ class brcaParse:
         acceptorstd = 2.61#74666704340925
         acceptormean =8.13#87499999999999
         if(site =="5'"):
-            score = (entScore-donormean)/donorstd
+            score = float((entScore-donormean)/donorstd)
              
         if (site =="3'"):
-            score = (entScore-acceptormean)/acceptorstd
+            score = float((entScore-acceptormean)/acceptorstd)
 
         if(site == "N/A" or site =="inExon"):
-            score = (entScore-donormean)/donorstd
+            score = float((entScore-donormean)/donorstd)
         return(score)
 
     def pathProb(self,zScoreRef, zScoreAlt, site,i):
@@ -357,7 +363,7 @@ class brcaParse:
             exonStart = exonDict.exonStarts.get(self.ExonRef[i])
             exonStop = exonDict.exonStops.get(self.ExonRef[i])
 
-            for j in range(0,len(exonStart)):
+            for j in xrange(0,len(exonStart)):
                 if(int(self.Pos[i])>=exonStart[j] and int(self.Pos[i])<=exonStop[j]):
                     if zScoreAlt <-2:
                         pass
