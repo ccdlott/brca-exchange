@@ -24,8 +24,6 @@ script to find entropy scores for the 3 and 5 prime scores.
 '''
 ######################################################################
 
-#todo:make sure loc is the splice site loc, set up code for decision making, ref cdna seq set up, z score calculator, python 2.7 set up
-#not sure if Tyler has done the above yet  
 
 #reverse compliment of dna string
 def revComp(dna):
@@ -122,12 +120,10 @@ class brcaParse(object):
                 f.write(self.id[i] +"\t" + self.Gene[i] + "\t" + self.Sig[i] + "\t")
                 loc = (int(self.Pos[i]) - int(self.BRCA1hg38Start))
                 site, upscore, downscore, exonLoc = self.inSpliceSite(i)
-
                 exLoc = int(exonLoc) - int(self.BRCA1hg38Start)#normalized location for seuqence
                 f.write("{}\t".format(site))
 
                 if (site != "N/A" or site !="inExon"):
-
                     upscore = 0
                     downscore = 0
                     
@@ -137,7 +133,6 @@ class brcaParse(object):
                 if (site == "5'"):
                     altScore = getEntScore(revComp(tempSeq[exLoc-3:exLoc+6]))#score for the splice site with the mutation
                     oriScore = getEntScore(revComp(self.BRCA1hg38Seq[exLoc-3:exLoc+6]))#score for unaltered cDNA
-                    
 
                     f.write(str(altScore) + "\t" + str(self.getZScore(altScore,site))+
                             "\t"+ str(oriScore) + "\t"+ str(self.getZScore(oriScore,site))+"\t")
@@ -184,22 +179,20 @@ class brcaParse(object):
                 f.write(self.id[i] +"\t" + self.Gene[i] + "\t" + self.Sig[i] + "\t")
                 loc = (int(self.Pos[i]) - int(self.BRCA2hg38Start))
                 site, upscore, downscore, exonLoc = self.inSpliceSite(i)
-
                 exLoc = int(exonLoc) - int(self.BRCA2hg38Start)#normalized location for seuqence
                 f.write("{}\t".format(site))
 
                 if (site != "N/A" or site !="inExon"):
-
                     upscore = 0
                     downscore = 0
                     
                 lenSplice = 9
 
+                #should the below be for BRCA2? I would assume yes
                 tempSeq = self.BRCA1hg38Seq[:loc-1] + self.Alt[i] + self.BRCA1hg38Seq[loc+len(self.Ref[i])-1:]
                 if (site == "5'"):
                     altScore = getEntScore(tempSeq[exLoc-3:exLoc+6])#score for the splice site with the mutation
                     oriScore = getEntScore(self.BRCA2hg38Seq[exLoc-3:exLoc+6])#score for unaltered cDNA
-                    
 
                     f.write(str(altScore) + "\t" + str(self.getZScore(altScore,site))+
                             "\t"+ str(oriScore) + "\t"+ str(self.getZScore(oriScore,site))+"\t")
@@ -279,7 +272,6 @@ class brcaParse(object):
             for j in xrange(0,len(exonStart)):
                 if (abs(int(self.Pos[i])-exonStart[j])<=9):
                     exonLoc = exonStart[j]
-
                     return("5'", upStreamScore, downStreamScore,exonLoc)
 
             for j in xrange(0,len(exonStop)):
@@ -307,7 +299,6 @@ class brcaParse(object):
 
                 if (abs(int(self.Pos[i])-exonStop[j])<=9):
                     exonLoc = exonStart[j]
-
                     return("5'",upStreamScore, downStreamScore, exonLoc)
                 
             for j in xrange(0,len(exonStart)):
@@ -327,7 +318,6 @@ class brcaParse(object):
             loc1 = (upStream - int(self.BRCA1hg38Start))
             loc2 = (downStream - int(self.BRCA1hg38Start))
             orgScore1 = getEntScore(revComp(self.BRCA1hg38Seq[loc1-3:loc1+6]))
-
             orgScore2 = getEntScore(revComp(self.BRCA1hg38Seq[loc2-3:loc2+6]))
             return(orgScore1,orgScore2)
 
@@ -336,7 +326,6 @@ class brcaParse(object):
             loc1 = (upStream - int(self.BRCA2hg38Start))
             loc2 = (downStream - int(self.BRCA2hg38Start))
             orgScore1 = getEntScore(self.BRCA2hg38Seq[loc1-3:loc1+6])
-
             orgScore2 = getEntScore(self.BRCA2hg38Seq[loc2-3:loc2+6])
             return(orgScore1,orgScore2)
 
