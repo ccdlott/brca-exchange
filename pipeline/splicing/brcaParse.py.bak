@@ -259,6 +259,7 @@ class brcaParse:
     
     def inSpliceSite(self, i):
         if self.Gene[i] == "BRCA1":
+
             exonStart = exonDict.exonStarts.get(self.ExonRef[i])
             exonStop = exonDict.exonStops.get(self.ExonRef[i])
 
