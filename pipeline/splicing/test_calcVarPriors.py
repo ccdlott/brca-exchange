@@ -15,7 +15,9 @@ class test_calcVarPriors(unittest.TestCase):
                            
     def test_getVarType(self):
         '''
-        Tests that variant type is set correctly to substitution, deletion, insertion, or delins based on variant "Ref" and "Alt" values
+        Tests that variant type is set correctly to either: 
+        substitution, deletion, insertion, or delins 
+        based on variant "Ref" and "Alt" values
         '''
         self.variant["Ref"] = "A"
         self.variant["Alt"] = "T"
