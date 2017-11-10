@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
+import argparse
+import csv
+
 '''
 calcVarPriors
 
 Parses a tsv file (default built.tsv) containing variant information and for each variant in file 
 calculates either the prior probability of pathogenicity or a prior ENGIMA classification based on variant type and variant location
 '''
-
-import argparse
-import csv
 
 def getVarType(variant):
     '''
