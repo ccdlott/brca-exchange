@@ -17,6 +17,8 @@ import re
 import subprocess
 import tempfile
 import os
+from joblib import Parallel, delayed
+import multiprocessing
 from Bio.Seq import Seq
 from calcMaxEntScanMeanStd import fetch_gene_coordinates, runMaxEntScan
 
@@ -53,6 +55,15 @@ brca2CIDomains = {"enigma": {"dnb": {"domStart": 32356433,
 # BRCA1/BRCA2 grey zone boundaries
 greyZones = {"BRCA2": {"greyZoneStart": 32398438,
                        "greyZoneEnd": 32398488}}
+
+
+# fetch_gene_coordinates
+brca1TranscriptData = fetch_gene_coordinates("NM_007294.3")
+brca2TranscriptData = fetch_gene_coordinates("NM_000059.3") 
+print "transcript data acquired"
+
+countList = []
+totalCountList = []
 
 
 def checkSequence(sequence):
@@ -197,8 +208,12 @@ def varOutsideBoundaries(variant):
     '''Given a variant, determines if variant is outside transcript boundaries'''
     varGenPos = int(variant["Pos"])
     varTranscript = variant["Reference_Sequence"]
-    transcriptData = fetch_gene_coordinates(str(varTranscript))
+    #transcriptData = fetch_gene_coordinates(str(varTranscript))
     varStrand = getVarStrand(variant)
+    if variant["Reference_Sequence"] == "NM_007294.3":
+        transcriptData = brca1TranscriptData
+    elif variant["Reference_Sequence"] == "NM_000059.3":
+        transcriptData = brca2TranscriptData
     if varStrand == "+":
         txnStart = int(transcriptData["txStart"])
         txnEnd = int(transcriptData["txEnd"])
@@ -220,8 +235,12 @@ def varInUTR(variant):
     if varOutBounds == False:
         varGenPos = int(variant["Pos"])
         varTranscript = variant["Reference_Sequence"]
-        transcriptData = fetch_gene_coordinates(varTranscript)
+        #transcriptData = fetch_gene_coordinates(varTranscript)
         varStrand = getVarStrand(variant)
+        if variant["Reference_Sequence"] =="NM_007294.3":
+            transcriptData =brca1TranscriptData
+        elif variant["Reference_Sequence"] == "NM_000059.3":
+            transcriptData = brca2TranscriptData
         if varStrand == "+":
             tsnStart = int(transcriptData["cdsStart"])
             tsnEnd = int(transcriptData["cdsEnd"])
@@ -245,7 +264,12 @@ def getExonBoundaries(variant):
     Uses function implemented in calcMaxEntScanMeanStd to get data for variant's transcript
     '''
     varTranscript = variant["Reference_Sequence"]
-    transcriptData = fetch_gene_coordinates(str(varTranscript))
+    #transcriptData = fetch_gene_coordinates(str(varTranscript))
+
+    if variant["Reference_Sequence"] =="NM_007294.3":
+        transcriptData =brca1TranscriptData
+    elif variant["Reference_Sequence"] == "NM_000059.3":
+        transcriptData = brca2TranscriptData
 
     # parse exon starts and exon ends
     transcriptData["exonStarts"] = re.sub(",(\s)*$", "", transcriptData["exonStarts"])
@@ -757,33 +781,104 @@ def getVarDict(variant, boundaries):
     varType = getVarType(variant)
     varLoc = getVarLocation(variant, boundaries)
 
-    varDict = {"varGene": variant["Gene_Symbol"],
+    varDict = {"varHGVScDNA": variant["HGVS_cDNA"],
+               "varGene": variant["Gene_Symbol"],
                "varChrom": variant["Chr"],
                "varStrand": varStrand,
                "varGenCoordinate": variant["Pos"],
                "varType": varType,
-               "varLoc": varLoc,
-               "varHGVScDNA": variant["pyhgvs_cDNA"]}
-
+               "varLoc": varLoc}
     return varDict
+
+def getVarData(variant, boundaries):
+    varDict = getVarDict(variant, boundaries)
+    varLoc = varDict["varLoc"]
+
+    priorProb = "-"
+    enigmaClass = "-"
+    donorVarMES = "-"
+    donorVarZ = "-"
+    donorRefMES = "-"
+    donorRefZ =  "-"
+    accVarMES = "-"
+    accVarZ = "-"
+    accRefMES = "-"
+    accRefZ =  "-"
+    deNovoMES = "-"
+    deNovoZ = "-"
+    spliceSite = 0
+
+    if varDict["varHGVScDNA"] != "-":
+        if varDict["varType"] == "substitution":
+            if varLoc == "splice_donor_variant" or varLoc == "CI_splice_donor_variant":
+                priorData = getPriorProbSpliceDonorSNS(variant, boundaries)
+                priorProb = priorData["priorProb"]
+                enigmaClass = priorData["enigmaClass"]
+                donorVarMES = priorData["altMaxEntScanScore"]
+                donorVarZ = priorData["altZScore"]
+                donorRefMES = priorData["refMaxEntScanScore"]
+                donorRefZ = priorData["refZScore"]
+                spliceSite = 1
+            elif varLoc == "splice_acceptor_variant" or varLoc == "CI_splice_acceptor_variant":
+                priorData = getPriorProbSpliceAcceptorSNS(variant, boundaries)
+                priorProb = priorData["priorProb"]
+                enigmaClass =  priorData["enigmaClass"]
+                accVarMES = priorData["altMaxEntScanScore"]
+                accVarZ = priorData["altZScore"]
+                accRefMES = priorData["refMaxEntScanScore"]
+                accRefZ =  priorData["refZScore"]
+                spliceSite = 1
+
+    varData = [varDict["varHGVScDNA"], varDict["varGenCoordinate"], varDict["varType"], varDict["varLoc"],
+               priorProb, enigmaClass, donorVarMES, donorVarZ, donorRefMES, donorRefZ, accVarMES, accVarZ,
+               accRefMES, accRefZ, deNovoMES, deNovoZ, spliceSite]
+    return varData
+
+
+def singleVariant(variant, boundaries):
+    varData = getVarData(variant, boundaries)
+    totalCountList.append("")
+    # if prior prob was calculated for a specific variant, +1 to scoredVars
+    if varData[4] != "-":
+        countList.append("")
+    if len(totalCountList) % 100 == 0:
+        print len(countList), len(totalCountList)
+    return varData
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', "--inputFile", default="built.tsv", help="File with variant information")
     parser.add_argument('-o', "--outputFile", help="File where results will be output")
-    parser.add_argument('-b', "--boundaries", default="ENIGMA",
+    parser.add_argument('-b', "--boundaries", default="enigma",
                         help="Specifies which boundaries (ENIGMA or PRIORS) to use for clinically important domains")
     args = parser.parse_args()    
     
     inputData = csv.DictReader(open(args.inputFile, "r"), delimiter="\t")
-    for variant in inputData:
-        varDict = getVarDict(variant)
-    # TO DO - create conditional to account for user selected boundaries
-    newColumns = ["varType", "varLoc", "pathProb", "ENIGMAClass", "donorVarMES",
-                  "donorVarZ", "donorRefMES", "donorRefZ", "accVarMES", "accVarZ",
-                  "accRefMES", "accRefZ", "deNovoMES", "deNovoZ", "spliceSite",
-                  "spliceRescue", "frameshift", "CNV", "spliceFlag"]
-    # TO DO - create built_with_priors (copy of built) and append new columns
+    outputData = csv.writer(open(args.outputFile, "w"), delimiter="\t")
+
+    outputHeaders = ["HGVS_cDNA", "Pos", "varType", "varLoc", "priorProb", "enigmaClass", "donorVarMES",
+                     "donorVarZ", "donorRefMES", "donorRefZ", "accVarMES", "accVarZ",
+                     "accRefMES", "accRefZ", "deNovoMES", "deNovoZ", "spliceSite"]
+    outputData.writerow(outputHeaders)
+    print "headers written"    
+
+    #for variant in inputData:
+    #    varData = getVarData(variant, args.boundaries)
+    #    countList[0] += 1
+    #    # if prior prob was calculated for a specific variant, +1 to scoredVars
+    #    if varData[4] != "-":
+    #        countList[1] += 1
+    #    outputData.writerow(varData)
+    #    print countList
+
+    num_cores = multiprocessing.cpu_count() - 1
+    results = Parallel(n_jobs=num_cores)(delayed(singleVariant)(i, args.boundaries) for i in inputData)
+    for i in results:
+        outputData.writerow(i)
+
+    print countList
+
+    outputData.close()
     
 if __name__ == "__main__":
     main()
