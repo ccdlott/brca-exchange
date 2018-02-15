@@ -686,14 +686,13 @@ def getRefAltScores(refSeq, altSeq, donor=False):
                                "zScore": altZScore}}
     return scoreDict
 
-def getMaxMaxEntScanScoreSlidingWindowSNS(variant):
+def getMaxEntScanScoresSlidingWindowSNS(variant):
     '''
-    Given a variant, determines the maximum alt MaxEntScan score in a 9 bp sliding window
-       with the variant in each position (1-9)
-    Returns a dictionary containing the ref and alt MaxEntScan score and z-score and position of variant for the highest scoring window
-    Dictionary also containing value "inFirstThree" that has value either True or False
-       If inFirstThree = True, then variant is in firt 3 bp of highest scoring sliding window
-       If inFirstThree = False, then variant is in last 6 bp of highest scoring sliding window 
+    Given a variant, determines window sequences and scores for a 9 bp sliding window
+    Returns a dictionary containing:
+        1. window sequences - ref and alt seq for each window (variant in positions 1-9)
+        2. window scores - ref and alt MaxEntScan scores and zscores for each window
+        3. window alt MaxEntScan scores - only contains alt MaxEntScan scores for each window
     '''
     varGenPos = int(variant["Pos"])
     varStrand = getVarStrand(variant)
@@ -728,17 +727,42 @@ def getMaxMaxEntScanScoreSlidingWindowSNS(variant):
         varPos -= 1
         windowStart += 1
         windowEnd += 1
-        
+
+    return {"windowSeqs": windowSeqs,
+            "windowScores": windowScores,
+            "windowAltMaxEntScanScores": windowAltMaxEntScanScores}
+
+def getMaxMaxEntScanScoreSlidingWindowSNS(variant):
+    '''
+    Given a variant, determines the maximum alt MaxEntScan score in a 9 bp sliding window
+       with the variant in each position (1-9)
+    Returns a dictionary containing the ref and alt MaxEntScan score and z-score and position of variant for the highest scoring window
+    Dictionary also containing value "inFirstThree" that has value either True or False
+       If inFirstThree = True, then variant is in firt 3 bp of highest scoring sliding window
+       If inFirstThree = False, then variant is in last 6 bp of highest scoring sliding window 
+    '''
+    inSpliceDonor = varInSpliceRegion(variant, donor=True)
+    slidingWindowInfo = getMaxEntScanScoresSlidingWindowSNS(variant)
+    windowAltMaxEntScanScores = slidingWindowInfo["windowAltMaxEntScanScores"]
+    if inSpliceDonor == True:
+        refSpliceBounds = getVarSpliceRegionBounds(variant, donor=True)
+        refSpliceSeq = getFastaSeq(getVarChrom(variant), refSpliceBounds["donorStart"], refSpliceBounds["donorEnd"]).upper()
+        for position, seqs in slidingWindowInfo["windowSeqs"].iteritems():
+            if seqs["refSeq"] == refSpliceSeq:
+                refSpliceWindow = position
+                # removes reference splice window so it is not considered for de novo splicing
+                del windowAltMaxEntScanScores[refSpliceWindow]
+                
     # to get tuple containing sequence with variant position with maximum alt MaxEntScan score
     maxAltWindowScore = max(windowAltMaxEntScanScores.items(), key=lambda k: k[1])
     maxVarPosition = maxAltWindowScore[0]
-    maxScores = windowScores[maxVarPosition]
-
+    maxScores = slidingWindowInfo["windowScores"][maxVarPosition]
+    
     # determines if variant is in the first three bases of the 9 bp donor sequence
     inFirstThree = False
     if maxVarPosition <= 3:
         inFirstThree = True
-            
+    
     return {"refMaxEntScanScore": maxScores["refMaxEntScanScore"],
             "refZScore": maxScores["refZScore"],
             "altMaxEntScanScore": maxScores["altMaxEntScanScore"],
@@ -1095,37 +1119,48 @@ def getPriorProbAfterGreyZoneSNS(variant, boundaries):
         return {"priorProb": priorProb,
                 "enigmaClass": enigmaClass}
 
-def getPriorProbDeNovoExonSNS(variant):
-    #TO DO write function description, modify to be inclusive for intronic variants in ref splice sites
-    if varInExon(variant) == True:
-        slidingWindowScores = getMaxMaxEntScanScoreSlidingWindowSNS(variant)
-        subDonorScores = getSubsequentDonorScores(variant)
-        altZScore = slidingWindowScores["altZScore"]
-        refZScore = slidingWindowScores["refZScore"]
-        if altZScore <= refZScore:
-            priorProb = 0
-        else:
-            if altZScore < -2.0:
-                priorProb = 0.02
-            elif altZScore >= -2.0 and altZScore < 0.0:
-                priorProb = 0.3
+def getPriorProbDeNovoSNS(variant):
+    '''
+    Given a variant:
+      1. checks that variant is a single nucleotide substitution
+      2. checks that variant is in an exon or is in a reference splice donor region
+    Returns a dictionary containing prior probability of pathogenecity and predicted qualitative engima class 
+    '''
+    if getVarType(variant) == "substitution":
+        if varInExon(variant) == True or varInSpliceRegion(variant, donor=True) == True:
+            slidingWindowScores = getMaxMaxEntScanScoreSlidingWindowSNS(variant)
+            subDonorScores = getSubsequentDonorScores(variant)
+            altZScore = slidingWindowScores["altZScore"]
+            refZScore = slidingWindowScores["refZScore"]
+            if altZScore <= refZScore:
+                priorProb = 0
             else:
-                priorProb = 0.64
-        if altZScore > subDonorScores["zScore"]:
-            if priorProb == 0:
-                priorProb = 0.3
-            elif priorProb == 0.02:
-                priorProb = 0.3
-            elif priorProb == 0.3:
-                priorProb = 0.64
-            else:
-                priorProb = priorProb
+                if altZScore < -2.0:
+                    priorProb = 0.02
+                elif altZScore >= -2.0 and altZScore < 0.0:
+                    priorProb = 0.3
+                else:
+                    priorProb = 0.64
+            if altZScore > subDonorScores["zScore"]:
+                # promote prior prob by one step
+                if priorProb == 0:
+                    priorProb = 0.3
+                elif priorProb == 0.02:
+                    priorProb = 0.3
+                elif priorProb == 0.3:
+                    priorProb = 0.64
+                else:
+                    priorProb = priorProb
                 
-        if priorProb == 0:
-            return False
-        else:
-            return {"priorProb": priorProb,
-                    "enigmaClass": getEnigmaClass(priorProb)}
+            if priorProb == 0:
+                return False
+            else:
+                return {"priorProb": priorProb,
+                        "enigmaClass": getEnigmaClass(priorProb),
+                        "refMaxEntScanScore": slidingWindowScores["refMaxEntScanScore"],
+                        "altMaxEntScanScore": slidingWindowScores["altMaxEntScanScore"],
+                        "refZScore": refZScore,
+                        "altZScore": altZScore}
 
 def getVarDict(variant, boundaries):
     '''
