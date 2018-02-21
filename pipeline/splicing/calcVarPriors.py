@@ -1458,19 +1458,11 @@ def getPriorProbExonSNS(variant, boundaries, variantFile):
                         "deNovoDonorPrior": priorDonorData["priorProb"],
                         "refAccPrior": "-",
                         "deNovoAccPrior": priorAccData["priorProb"],
-                        "refRefDonorMES": "-",
-                        "refRefDonorZ": "-",
-                        "altRefDonorMES": "-",
-                        "altRefDonorZ": "-",
                         "refDeNovoDonorMES": priorDonorData["refMaxEntScanScore"],
                         "refDeNovoDonorZ": priorDonorData["refZScore"],
                         "altDeNovoDonorMES": priorDonorData["altMaxEntScanScore"],
                         "altDeNovoDonorZ": priorDonorData["altZScore"],
                         "deNovoDonorFlag": priorDonorData["deNovoDonorFlag"],
-                        "refRefAccMES": "-",
-                        "refRefAccZ": "-",
-                        "altRefAccMES": "-",
-                        "altRefAccZ": "-",
                         "refDeNovoAccMES": priorAccDonor["refMaxEntScanScore"],
                         "refDeNovoAccZ": priorAccDonor["refZScore"],
                         "altDeNovoAccMES": priorAccDonor["altMaxEntScanScore"],
@@ -1517,11 +1509,13 @@ def getVarData(variant, boundaries, variantFile):
         if spliceAccVar == True:
             priorData = getPriorProbSpliceAcceptorSNS(variant, boundaries, variantFile)
         if deNovoSpliceAccVar == True and spliceAccVar == False:
-            priorData = getPriorProbExonSNS(variant, boundaries)
-        if varInExon(variant) == True and spliceDonorVar == False and deNovoSpliceAccVar == False:
-            priorData = getPriorProbExonSNS(variant, boundaries)
-        if afterGreyZone == True:
-            priorData = getPriorProbExonSNS(variant, boundaries)
+            priorData = getPriorProbExonSNS(variant, boundaries, variantFile)
+        elif varInExon(variant) == True and afterGreyZone == False:
+            priorData = getPriorProbExonSNS(variant, boundaries, variantFile)
+        elif afterGreyZone == True:
+            priorData = getPriorProbExonSNS(variant, boundaries, variantFile)
+        else:
+            priorData = {}
         priorData["varType"] = getVarType(variant)
         priorData["varLoc"] = getVarLocation(variant, boundaries)
         priorData["Chr"] = variant["Chr"]
