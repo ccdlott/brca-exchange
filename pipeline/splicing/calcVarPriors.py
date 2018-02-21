@@ -1384,6 +1384,127 @@ def getPriorProbSpliceAcceptorSNS(variant, boundaries):
                 "deNovoAccFlag": deNovoAccInfo["deNovoAccFlag"],
                 "spliceSite": refSpliceInfo["spliceSite"]}
         
+def getPriorProbExonSNS(variant, boundaries):
+# TO DO work in progress does not account for missense variants, only de novo and after grey zone variants
+    if getVarType(variant) == "substitution":
+        inExon = varInExon(variant)
+        if inExon == True:
+            spliceDonorVar = varInSpliceRegion(variant, donor=True, deNovo=False)
+            spliceAccVar = varInSpliceRegion(variant, donor=False, deNovo=False)
+            deNovoSpliceAccVar = varInSpliceRegion(variant, donor=False, deNovo=True)
+            afterGreyZone = varAfterGreyZone(variant)
+            if spliceDonorVar == False and deNovoSpliceAccVar == False and afterGreyZone == False:
+                priorData = getPriorProbDeNovoDonorSNS(variant)
+                return {"applicablePrior": priorData["priorProb"],
+                        "applicableEnigmaClass": priorData["enigmaClass"],
+                        "refDonorPrior": "-",
+                        "deNovoDonorPrior": priorData["priorProb"],
+                        "refAccPrior": "-",
+                        "deNovoAccPrior": "-",
+                        "refRefDonorMES": "-",
+                        "refRefDonorZ": "-",
+                        "altRefDonorMES": "-",
+                        "altRefDonorZ": "-",
+                        "refDeNovoDonorMES": priorProb["refMaxEntScanScore"],
+                        "refDeNovoDonorZ": priorProb["refZScore"],
+                        "altDeNovoDonorMES": priorProb["altMaxEntScanScore"],
+                        "altDeNovoDonorZ": priorProb["altZScore"],
+                        "deNovoDonorFlag": priorProb["deNovoDonorFlag"],
+                        "refRefAccMES": "-",
+                        "refRefAccZ": "-",
+                        "altRefAccMES": "-",
+                        "altRefAccZ": "-",
+                        "refDeNovoAccMES": "-",
+                        "refDeNovoAccZ": "-",
+                        "altDeNovoAccMES": "-",
+                        "altDeNovoAccZ": "-",
+                        "deNovoAccFlag": 0,
+                        "spliceSite": 0}
+            if deNovoSpliceAccVar == True and spliceAccVar == False and afterGreyZone == False:
+                priorAccData = getPriorProbDeNovoAcceptorSNS(variant)
+                priorDonorData = getPriorProbDeNovoDonorSNS(variant, accDonor=True)
+                return {"applicablePrior": priorDonorData["priorProb"],
+                        "applicableEnigmaClass": priorDonorData["enigmaClass"],
+                        "refDonorPrior": "-",
+                        "deNovoDonorPrior": priorDonorData["priorProb"],
+                        "refAccPrior": "-",
+                        "deNovoAccPrior": priorAccData["priorProb"],
+                        "refRefDonorMES": "-",
+                        "refRefDonorZ": "-",
+                        "altRefDonorMES": "-",
+                        "altRefDonorZ": "-",
+                        "refDeNovoDonorMES": priorDonorData["refMaxEntScanScore"],
+                        "refDeNovoDonorZ": priorDonorData["refZScore"],
+                        "altDeNovoDonorMES": priorDonorData["altMaxEntScanScore"],
+                        "altDeNovoDonorZ": priorDonorData["altZScore"],
+                        "deNovoDonorFlag": priorDonorData["deNovoDonorFlag"],
+                        "refRefAccMES": "-",
+                        "refRefAccZ": "-",
+                        "altRefAccMES": "-",
+                        "altRefAccZ": "-",
+                        "refDeNovoAccMES": priorAccDonor["refMaxEntScanScore"],
+                        "refDeNovoAccZ": priorAccDonor["refZScore"],
+                        "altDeNovoAccMES": priorAccDonor["altMaxEntScanScore"],
+                        "altDeNovoAccZ": priorAccDonor["altZScore"],
+                        "deNovoAccFlag": priorAccDonor["deNovoAccFlag"],
+                        "spliceSite": 0}
+            if inExon == True and afterGreyZone == True:
+                priorData = getPriorProbAfterGreyZoneSNS(variant, boundaries)
+                return {"applicablePrior": priorData["priorProb"],
+                        "applicableEnigmaClass": priorData["enigmaClass"],
+                        "refDonorPrior": "-",
+                        "deNovoDonorPrior": "-",
+                        "refAccPrior": "-",
+                        "deNovoAccPrior": "-",
+                        "refRefDonorMES": "-",
+                        "refRefDonorZ": "-",
+                        "altRefDonorMES": "-",
+                        "altRefDonorZ": "-",
+                        "refDeNovoDonorMES": "-",
+                        "refDeNovoDonorZ": "-",
+                        "altDeNovoDonorMES": "-",
+                        "altDeNovoDonorZ": "-",
+                        "deNovoDonorFlag": 0,
+                        "refRefAccMES": "-",
+                        "refRefAccZ": "-",
+                        "altRefAccMES": "-",
+                        "altRefAccZ": "-",
+                        "refDeNovoAccMES": "-",
+                        "refDeNovoAccZ": "-",
+                        "altDeNovoAccMES": "-",
+                        "altDeNovoAccZ": "-",
+                        "deNovoAccFlag": 0,
+                        "spliceSite": 0}
+
+def getVarData(variant, boundaries):
+    if getVarType(variant) == "substitution":
+        spliceDonorVar = varInSpliceRegion(variant, donor=True, deNovo=False)
+        spliceAccVar = varInSpliceRegion(variant, donor=False, deNovo=False)
+        deNovoSpliceAccVar = varInSpliceRegion(variant, donor=False, deNovo=True)
+        afterGreyZone =  varAfterGreyZone(variant)
+        if spliceDonorVar == True:
+            priorData = getPriorProbSpliceSiteSNS(variant, boundaries, donor=True)
+        if spliceAccVar == True:
+            priorData = getPriorProbSpliceSiteSNS(variant, boundaries, donor=False)
+        if deNovoSpliceAccVar == True and spliceAccVar == False:
+            priorData = getPriorProbExonSNS(variant, boundaries)
+        if varInExon(variant) == True and spliceDonorVar == False and deNovoSpliceAccVar == False:
+            priorData = getPriorProbExonSNS(variant, boundaries)
+        if afterGreyZone == True:
+            priorData = getPriorProbExonSNS(variant, boundaries)
+        priorData["varType"] = getVarType(variant)
+        priorData["varLoc"] = getVarLocation(variant, boundaries)
+        priorData["Chr"] = variant["Chr"]
+        priorData["Pos"] = variant["Pos"]
+        priorData["Ref"] = variant["Ref"]
+        priorData["Alt"] = variant["Alt"]
+        priorData["Reference_Sequence"] = variant["Reference_Sequence"]
+        priorData["HGVS_cDNA"] = variant["HGVS_cDNA"]
+        priorData["Gene_Symbol"] = variant["Gene_Symbol"]
+        priorData["Hg38_Start"] = variant["Hg38_Start"]
+        priorData["Hg38_End"] = variant["Hg38_End"]
+        return priorData
+    
 def getVarDict(variant, boundaries):
     '''
     Given input data, returns a dictionary containing information for each variant in input
@@ -1413,8 +1534,25 @@ def main():
     args = parser.parse_args()    
     
     inputData = csv.DictReader(open(args.inputFile, "r"), delimiter="\t")
+    fieldnames = inputData.fieldnames
+    newHeaders = ["varType", "varLoc", "applicablePrior", "applicableEnigmaClass", "refDonorPrior", "deNovoDonorPrior", "refRefDonorMES",
+                  "refRefDonorZ", "altRefDonorMES", "altRefDonorZ", "refDeNovoDonorMES", "refDeNovoDonorZ", "altDeNovoDonorMES",
+                  "altDeNovoDonorZ", "deNovoDonorFlag", "refAccPrior", "deNovoAccPrior", "refRefAccMES", "refRefAccZ", "altRefAccMES",
+                  "altRefAccZ", "refDeNovoAccMES", "refDeNovoAccZ", "altDeNovoAccMES", "altDeNovoAccZ", "deNovoAccFlag", "spliceSite"]
+    for header in newHeaders:
+        fieldnames.append(header)
+    outputData = csv.DictWriter(open(args.outputFile, "w"), delimiter="\t", fieldnames=fieldnames)
+    outputData.writerow(dict((fn,fn) for fn in inputData.fieldnames))
+    print "columns added"
+    count = 0
     for variant in inputData:
-        varDict = getVarDict(variant)
+        varData = getVarData(variant, args.boundaries)
+        outputData.writerow(varData)
+        count += 1
+        print "variant done", str(count)
+    
+    #for variant in inputData:
+    #    varDict = getVarDict(variant)
     # TO DO - create conditional to account for user selected boundaries
     newColumns = ["varType", "varLoc", "pathProb", "ENIGMAClass", "donorVarMES",
                   "donorVarZ", "donorRefMES", "donorRefZ", "accVarMES", "accVarZ",
