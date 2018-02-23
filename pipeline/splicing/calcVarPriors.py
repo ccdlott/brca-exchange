@@ -1405,11 +1405,11 @@ def getPriorProbExonSNS(variant, boundaries):
                         "refRefDonorZ": "-",
                         "altRefDonorMES": "-",
                         "altRefDonorZ": "-",
-                        "refDeNovoDonorMES": priorProb["refMaxEntScanScore"],
-                        "refDeNovoDonorZ": priorProb["refZScore"],
-                        "altDeNovoDonorMES": priorProb["altMaxEntScanScore"],
-                        "altDeNovoDonorZ": priorProb["altZScore"],
-                        "deNovoDonorFlag": priorProb["deNovoDonorFlag"],
+                        "refDeNovoDonorMES": priorData["refMaxEntScanScore"],
+                        "refDeNovoDonorZ": priorData["refZScore"],
+                        "altDeNovoDonorMES": priorData["altMaxEntScanScore"],
+                        "altDeNovoDonorZ": priorData["altZScore"],
+                        "deNovoDonorFlag": priorData["deNovoDonorFlag"],
                         "refRefAccMES": "-",
                         "refRefAccZ": "-",
                         "altRefAccMES": "-",
@@ -1429,16 +1429,20 @@ def getPriorProbExonSNS(variant, boundaries):
                         "deNovoDonorPrior": priorDonorData["priorProb"],
                         "refAccPrior": "-",
                         "deNovoAccPrior": priorAccData["priorProb"],
+                        "refRefAccMES": "-",
+                        "refRefAccZ": "-",
+                        "altRefAccMES": "-",
+                        "altRefAccZ": "-",
                         "refDeNovoDonorMES": priorDonorData["refMaxEntScanScore"],
                         "refDeNovoDonorZ": priorDonorData["refZScore"],
                         "altDeNovoDonorMES": priorDonorData["altMaxEntScanScore"],
                         "altDeNovoDonorZ": priorDonorData["altZScore"],
                         "deNovoDonorFlag": priorDonorData["deNovoDonorFlag"],
-                        "refDeNovoAccMES": priorAccDonor["refMaxEntScanScore"],
-                        "refDeNovoAccZ": priorAccDonor["refZScore"],
-                        "altDeNovoAccMES": priorAccDonor["altMaxEntScanScore"],
-                        "altDeNovoAccZ": priorAccDonor["altZScore"],
-                        "deNovoAccFlag": priorAccDonor["deNovoAccFlag"],
+                        "refDeNovoAccMES": priorAccData["refMaxEntScanScore"],
+                        "refDeNovoAccZ": priorAccData["refZScore"],
+                        "altDeNovoAccMES": priorAccData["altMaxEntScanScore"],
+                        "altDeNovoAccZ": priorAccData["altZScore"],
+                        "deNovoAccFlag": priorAccData["deNovoAccFlag"],
                         "spliceSite": 0}
             if inExon == True and afterGreyZone == True:
                 priorData = getPriorProbAfterGreyZoneSNS(variant, boundaries)
@@ -1475,9 +1479,9 @@ def getVarData(variant, boundaries):
         deNovoSpliceAccVar = varInSpliceRegion(variant, donor=False, deNovo=True)
         afterGreyZone =  varAfterGreyZone(variant)
         if spliceDonorVar == True:
-            priorData = getPriorProbSpliceSiteSNS(variant, boundaries, donor=True)
+            priorData = getPriorProbSpliceDonorSNS(variant, boundaries)
         elif spliceAccVar == True:
-            priorData = getPriorProbSpliceSiteSNS(variant, boundaries, donor=False)
+            priorData = getPriorProbSpliceAcceptorSNS(variant, boundaries)
         elif varInExon(variant) == True and afterGreyZone == False:
             priorData = getPriorProbExonSNS(variant, boundaries)
         elif afterGreyZone == True:
