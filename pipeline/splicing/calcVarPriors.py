@@ -1299,6 +1299,8 @@ def getPriorProbSpliceDonorSNS(variant, boundaries, variantFile):
             applicablePrior = max(refPrior, proteinPrior)
         elif deNovoPrior != "N/A" and proteinPrior == "N/A":
             applicablePrior = max(deNovoPrior, refPrior)
+        elif deNovoPrior == "N/A" and proteinPrior == "N/A":
+            applicablePrior = refPrior
         return {"applicablePrior": applicablePrior,
                 "applicableEnigmaClass": getEnigmaClass(applicablePrior),
                 "proteinPrior": proteinPrior,
