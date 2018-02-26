@@ -1575,6 +1575,7 @@ def main():
     print "columns added"
     count = 0
     for variant in inputData:
+        print variant
         varData = getVarData(variant, args.boundaries, args.variantFile)
         outputData.writerow(varData)
         count += 1
