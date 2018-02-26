@@ -1420,7 +1420,10 @@ def getPriorProbExonSNS(variant, boundaries, variantFile):
             proteinInfo = getPriorProbProteinSNS(variant, variantFile)
             if spliceDonorVar == False and deNovoSpliceAccVar == False and afterGreyZone == False:
                 priorData = getPriorProbDeNovoDonorSNS(variant)
-                applicablePrior = max(proteinInfo["priorProb"], priorData["priorProb"])
+                if priorData["priorProb"] != "N/A":
+                    applicablePrior = max(proteinInfo["priorProb"], priorData["priorProb"])
+                else:
+                    applicablePrior = proteinInfo["priorProb"]
                 return {"applicablePrior": applicablePrior,
                         "applicableEnigmaClass": getEnigmaClass(applicablePrior),
                         "proteinPrior": proteinInfo["priorProb"],
@@ -1450,7 +1453,10 @@ def getPriorProbExonSNS(variant, boundaries, variantFile):
             if deNovoSpliceAccVar == True and spliceAccVar == False and afterGreyZone == False:
                 priorAccData = getPriorProbDeNovoAcceptorSNS(variant)
                 priorDonorData = getPriorProbDeNovoDonorSNS(variant, accDonor=True)
-                applicablePrior = max(priorDonorData["priorProb"], proteinInfo["priorProb"])
+                if priorDonorData["priorProb"] != "N/A":
+                    applicablePrior = max(priorDonorData["priorProb"], proteinInfo["priorProb"])
+                else:
+                    applicablePrior = proteinInfo["priorProb"]
                 return {"applicablePrior": applicablePrior,
                         "applicableEnigmaClass": getEnigmaClass(applicablePrior),
                         "proteinPrior": proteinInfo["priorProb"],
