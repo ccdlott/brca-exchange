@@ -1503,24 +1503,25 @@ def getPriorProbExonSNS(variant, boundaries, variantFile):
                         "spliceSite": 0}
 
 def getVarData(variant, boundaries, variantFile):
-    if getVarType(variant) == "substitution":
+    varType = getVarType(variant)
+    if varType == "substitution":
         spliceDonorVar = varInSpliceRegion(variant, donor=True, deNovo=False)
         spliceAccVar = varInSpliceRegion(variant, donor=False, deNovo=False)
         deNovoSpliceAccVar = varInSpliceRegion(variant, donor=False, deNovo=True)
         afterGreyZone =  varAfterGreyZone(variant)
         if spliceDonorVar == True:
             priorData = getPriorProbSpliceDonorSNS(variant, boundaries, variantFile)
-        if spliceAccVar == True:
+        elif spliceAccVar == True:
             priorData = getPriorProbSpliceAcceptorSNS(variant, boundaries, variantFile)
-        if deNovoSpliceAccVar == True and spliceAccVar == False:
+        elif deNovoSpliceAccVar == True and spliceAccVar == False:
             priorData = getPriorProbExonSNS(variant, boundaries, variantFile)
-        elif varInExon(variant) == True and afterGreyZone == False:
+        elif varInExon(variant) == True and spliceDonorVar == False and spliceAccVar == False and deNovoSpliceAccVar == False and afterGreyZone == False:
             priorData = getPriorProbExonSNS(variant, boundaries, variantFile)
         elif afterGreyZone == True:
             priorData = getPriorProbExonSNS(variant, boundaries, variantFile)
         else:
             priorData = {}
-        priorData["varType"] = getVarType(variant)
+        priorData["varType"] = varType
         priorData["varLoc"] = getVarLocation(variant, boundaries)
         priorData["Chr"] = variant["Chr"]
         priorData["Pos"] = variant["Pos"]
@@ -1575,8 +1576,7 @@ def main():
     print "columns added"
     count = 0
     for variant in inputData:
-        print variant
-        varData = getVarData(variant, args.boundaries, args.variantFile)
+        varData = getVarData(variant, args.boundaries, str(args.variantFile))
         outputData.writerow(varData)
         count += 1
         print "variant done", str(count)
