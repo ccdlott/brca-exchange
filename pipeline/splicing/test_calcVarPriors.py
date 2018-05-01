@@ -3695,6 +3695,66 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["HGVS_cDNA"] = "c.69T>G"
         deNovoSpliceFrameshift = calcVarPriors.getDeNovoSpliceFrameshiftStatus(self.variant, donor=False, deNovoDonorInRefAcc=False)
         self.assertFalse(deNovoSpliceFrameshift)
+
+    def test_getStructuralVarFrameshiftStatusInsertionTrue(self):
+        '''Tests function for variant where number of nucleotides inserted is NOT divisible by 3, which causes a frameshift'''
+        self.variant["Ref"] = "G"
+        self.variant["Alt"] = "GAG"
+        structuralVarFrameshift = calcVarPriors.getStructuralVarFrameshiftStatus(self.variant)
+        self.assertTrue(structuralVarFrameshift)
+
+    def test_getStructuralVarFrameshiftStatusInsertionFalse(self):
+        '''Tests function for variant where number of nucleotides inserted is divisible by 3, which does NOT cause a frameshift'''
+        self.variant["Ref"] = "T"
+        self.variant["Alt"] = "TTTA"
+        structuralVarFrameshift = calcVarPriors.getStructuralVarFrameshiftStatus(self.variant)
+        self.assertFalse(structuralVarFrameshift)
+
+    def test_getStructuralVarFrameshiftStatusDeletionTrue(self):
+        '''Tests function for variant where number of nucleotides deleted is NOT divisible by 3, which causes a frameshift'''
+        self.variant["Ref"] = "TGAAATTTT"
+        self.variant["Alt"] = "T"
+        structuralVarFrameshift = calcVarPriors.getStructuralVarFrameshiftStatus(self.variant)
+        self.assertTrue(structuralVarFrameshift)
+
+    def test_getStructuralVarFrameshiftStatusDeletionFalse(self):
+        '''Tests function for variant where number of nucleotides deleted is divisible by 3, which does NOT cause a frameshift'''
+        self.variant["Ref"] = "AAAGAAG"
+        self.variant["Alt"] = "A"
+        structuralVarFrameshift = calcVarPriors.getStructuralVarFrameshiftStatus(self.variant)
+        self.assertFalse(structuralVarFrameshift)
+
+    def test_getStructuralVarFrameshiftStatusDelinsTrue(self):
+        '''
+        Tests function for variant where:
+          number of nucleotides deleted is divisible by 3 BUT
+          number of nucleotides inserted is NOT divisible by 3, which causes a frameshift
+        '''
+        self.variant["Ref"] = "AAG"
+        self.variant["Alt"] = "TAAGACT"
+        structuralVarFrameshift = calcVarPriors.getStructuralVarFrameshiftStatus(self.variant)
+        self.assertTrue(structuralVarFrameshift)
+
+    def test_getStructuralVarFrameshiftStatusDelinsFalseUnequal(self):
+        '''
+        Tests function for variant where:
+          number of nucleotides deleted is divisible by 3 AND
+          number of nucleotides inserted is divisible by 3, which does NOT cause a frameshift
+        '''
+        self.variant["Ref"] = "AATACA"
+        self.variant["Alt"] = "CTGATGGTG"
+        structuralVarFrameshift = calcVarPriors.getStructuralVarFrameshiftStatus(self.variant)
+        self.assertFalse(structuralVarFrameshift)
+
+    def test_getStructuralVarFrameshiftStatusDelinsFalseEqual(self):
+        '''
+        Tests function for variant where:
+          number of nucleotides deleted = number inserted, which does NOT cause a frameshift
+        '''
+        self.variant["Ref"] = "TT"
+        self.variant["Alt"] = "AA"
+        structuralVarFrameshift = calcVarPriors.getStructuralVarFrameshiftStatus(self.variant)
+        self.assertFalse(structuralVarFrameshift)
         
     def test_getEnigmaClass(self):
         ''''

@@ -1554,6 +1554,31 @@ def getDeNovoSpliceFrameshiftStatus(variant, donor=True, deNovoDonorInRefAcc=Fal
         return True
     return False
 
+def getStructuralVarFrameshiftStatus(variant):
+    '''
+    Given a variant, first checks variant type and only continues if variant is not a single nucleotide substitution
+    Then based on type of structural variant, determines if variant causes a frameshift
+    Returns True if variant causes a frameshift, False otherwise
+    '''
+    varType = getVarType(variant)
+    lenVarRef = len(variant["Ref"])
+    lenVarAlt = len(variant["Alt"])
+    if varType != "substitution":
+        if varType == "insertion":
+            # lenVarAlt - 1 because Alt sequence includes original nucleotide
+            varLength = lenVarAlt - 1
+        elif varType == "deletion":
+            # lenVarRef - 1 because Alt sequence includes original nucleotide
+            varLength = lenVarRef - 1 
+        elif varType == "delins":
+            if lenVarAlt == lenVarRef:
+                return False
+            else:
+                varLength = abs(lenVarRef - lenVarAlt)
+        if varLength % 3 != 0:
+            return True
+        return False
+
 def getEnigmaClass(priorProb):
     '''
     Given a prior probability of pathogenecity, returns a predicted qualitative ENIGMA class
