@@ -343,19 +343,30 @@ def getTranscriptData(referenceSequence):
 def varOutsideBoundaries(variant):
     '''Given a variant, determines if variant is outside transcript boundaries'''
     varGenPos = int(variant["Pos"])
+    # note that variant["Pos"] is equal to variant["Hg38_Start"]
+    # so checking varGenPos is the same as checking Hg38_Start
+    varGenEnd = int(variant["Hg38_End"])
     varTranscript = variant["Reference_Sequence"]
     transcriptData = getTranscriptData(varTranscript)
     varStrand = getVarStrand(variant)
+    varPosOutBounds = False
+    varEndOutBounds = False
     if varStrand == "+":
         txnStart = int(transcriptData["txStart"])
         txnEnd = int(transcriptData["txEnd"])
         if varGenPos < txnStart or varGenPos > txnEnd:
-            return True
+            varPosOutBounds =  True
+        if varGenEnd < txnStart or varGenEnd > txnEnd:
+            varEndOutBounds = True
     else:
         txnStart = int(transcriptData["txEnd"])
         txnEnd = int(transcriptData["txStart"])
         if varGenPos > txnStart or varGenPos < txnEnd:
-            return True
+            varPosOutBounds = True
+        if varGenEnd > txnStart or varGenEnd < txnEnd:
+            varEndOutBounds = True
+    if varPosOutBounds == True and varEndOutBounds == True:
+        return True
     return False
 
 def varInUTR(variant):
@@ -3443,27 +3454,6 @@ def addVarDataToRow(varData, inputRow):
     for key in varData.keys():
         inputRow[key] = varData[key]
     return inputRow
-
-def getVarDict(variant, boundaries):
-    '''
-
-    Given input data, returns a dictionary containing information for each variant in input
-    Dictionary key is variant HGVS_cDNA and value is a dictionary containing variant gene, variant chromosome, 
-    variant strand, variant genomic coordinate, variant type, and variant location
-    '''
-    varStrand = getVarStrand(variant)
-    varType = getVarType(variant)
-    varLoc = getVarLocation(variant, boundaries)
-
-    varDict = {"varGene": variant["Gene_Symbol"],
-               "varChrom": variant["Chr"],
-               "varStrand": varStrand,
-               "varGenCoordinate": variant["Pos"],
-               "varType": varType,
-               "varLoc": varLoc,
-               "varHGVScDNA": variant["HGVS_cDNA"]}
-
-    return varDict
 
 def main():
     parser = argparse.ArgumentParser()

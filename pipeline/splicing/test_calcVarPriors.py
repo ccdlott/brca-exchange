@@ -339,34 +339,146 @@ class test_calcVarPriors(unittest.TestCase):
         self.assertTrue(withinBoundaries)        
 
     @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
-    def test_varOutsideBoundariesBRCA1(self, getVarStrand):
-        '''Tests that variant outside/inside transcript boundaries are correctly identified for BRCA1'''
+    def test_varOutsideBoundariesSubstitutionBRCA1(self, getVarStrand):
+        '''Tests that SNS variant outside/inside transcript boundaries are correctly identified for BRCA1'''
         self.variant["Reference_Sequence"] = "NM_007294.3"
         self.variant["Gene_Symbol"] = "BRCA1"
 
-        # checks for BRCA1 variant outside transcript boundaries
-        self.variant["Pos"] = "43044274"
+        # checks for BRCA1 SNS variant outside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43044274"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertTrue(varOutBounds)
 
-        # checks for BRCA1 variant inside transcript boundaries
-        self.variant["Pos"] = "43070957"
+        # checks for BRCA1 SNS variant inside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43070957"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertFalse(varOutBounds)
+        
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    def test_varOutsideBoundariesDeletionBRCA1(self, getVarStrand):
+        '''Tests that deletion variant outside/inside transcript boundaries are correctly identified for BRCA1'''
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+
+        # checks for BRCA1 deletion variant outside transcript boundaries
+        self.variant["Pos"] = "43037504"
+        self.variant["Hg38_Start"] = "43037504"
+        self.variant["Hg38_End"] = "43037508"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertTrue(varOutBounds)
+
+        # checks for BRCA1 deletion variant inside transcript boundaries
+        self.variant["Pos"] = "43037404"
+        self.variant["Hg38_Start"] = "43037404"
+        self.variant["Hg38_End"] = "43048457"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertFalse(varOutBounds)
+        
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    def test_varOutsideBoundariesInsertionBRCA1(self, getVarStrand):
+        '''Tests that insertion variant outside/inside transcript boundaries are correctly identified for BRCA1'''
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+
+        # checks for BRCA1 insertion variant outside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43039999"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertTrue(varOutBounds)
+
+        # checks for BRCA1 insertion variant inside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43076580"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertFalse(varOutBounds)
+        
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    def test_varOutsideBoundariesDelinsBRCA1(self, getVarStrand):
+        '''Tests that delins variant outside/inside transcript boundaries are correctly identified for BRCA1'''
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+
+        # checks for BRCA1 delins variant outside transcript boundaries
+        self.variant["Pos"] = "43041562"
+        self.variant["Hg38_Start"] = "43041562"
+        self.variant["Hg38_End"] = "43041567"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertTrue(varOutBounds)
+
+        # checks for BRCA1 delins variant inside transcript boundaries
+        self.variant["Pos"] = "43041662"
+        self.variant["Hg38_Start"] = "43041662"
+        self.variant["Hg38_End"] = "43046087"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertFalse(varOutBounds)
+        
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    def test_varOutsideBoundariesSubstitutionBRCA2(self, getVarStrand):
+        '''Tests that SNS variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+
+        # checks for BRCA2 SNS variant outside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315477"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertTrue(varOutBounds)
+
+        # checks for BRCA2 SNS variant inside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326500"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertFalse(varOutBounds)
 
     @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
-    def test_varOutsideBoundariesBRCA2(self, getVarStrand):
-        '''Tests that variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+    def test_varOutsideBoundariesDeletionBRCA2(self, getVarStrand):
+        '''Tests that deletion variant outside/inside transcript boundaries are correctly identified for BRCA2'''
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
 
-        # checks for BRCA2 variant outside transcript boundaries
-        self.variant["Pos"] = "32315477"
+        # checks for BRCA2 deletion variant outside transcript boundaries
+        self.variant["Pos"] = "32315225"
+        self.variant["Hg38_Start"] = "32315225"
+        self.variant["Hg38_End"] = "32315228"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertTrue(varOutBounds)
 
-        # checks for BRCA2 variant inside transcript boundaries
-        self.variant["Pos"] = "32326500"
+        # checks for BRCA2 deletion variant inside transcript boundaries
+        self.variant["Pos"] = "32316419"
+        self.variant["Hg38_Start"] = "32316419"
+        self.variant["Hg38_End"] = "32316421"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertFalse(varOutBounds)
+        
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    def test_varOutsideBoundariesInsertionBRCA2(self, getVarStrand):
+        '''Tests that insertion variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+
+        # checks for BRCA2 insertion variant outside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315326"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertTrue(varOutBounds)
+
+        # checks for BRCA2 insertion variant inside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326517"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertFalse(varOutBounds)
+        
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    def test_varOutsideBoundariesDelinsBRCA2(self, getVarStrand):
+        '''Tests that delins variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+
+        # checks for BRCA2 delins variant outside transcript boundaries
+        self.variant["Pos"] = "32314941"
+        self.variant["Hg38_Start"] = "32314941"
+        self.variant["Hg38_End"] = "32314945"
+        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
+        self.assertTrue(varOutBounds)
+
+        # checks for BRCA2 delins variant inside transcript boundaries
+        self.variant["Pos"] = "32326575"
+        self.variant["Hg38_Start"] = "32326575"
+        self.variant["Hg38_End"] = "32326578"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertFalse(varOutBounds)
         
@@ -3696,7 +3808,7 @@ class test_calcVarPriors(unittest.TestCase):
         deNovoSpliceFrameshift = calcVarPriors.getDeNovoSpliceFrameshiftStatus(self.variant, donor=False, deNovoDonorInRefAcc=False)
         self.assertFalse(deNovoSpliceFrameshift)
 
-    def test_getStructuralVarFrameshiftStatusInsertionTrue(self):
+    def test_getStructuralVarFrameshiftStatusnsertionTrue(self):
         '''Tests function for variant where number of nucleotides inserted is NOT divisible by 3, which causes a frameshift'''
         self.variant["Ref"] = "G"
         self.variant["Alt"] = "GAG"
@@ -8529,16 +8641,3 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["Alt"] = "GA"
         priorProb = calcVarPriors.getVarData(self.variant, boundaries, variantData, GENOME, BRCA2_RefSeq)
         self.assertEquals(priorProb["applicablePrior"], "-")
-        
-    @mock.patch('calcMaxEntScanMeanStd.fetch_gene_coordinates', return_value = transcriptDataBRCA2)
-    def test_getVarDict(self, fetch_gene_coordinates):
-        '''
-        Tests that: 
-        1. Variant information is being parsed correctly
-        '''
-        boundaries = "enigma"
-        varDict = calcVarPriors.getVarDict(self.variant, boundaries)
-        self.assertEquals(varDict["varHGVScDNA"], self.variant["HGVS_cDNA"])
-        self.assertEquals(varDict["varChrom"], self.variant["Chr"])
-        self.assertEquals(varDict["varGene"], self.variant["Gene_Symbol"])
-        self.assertEquals(varDict["varGenCoordinate"], self.variant["Pos"])
