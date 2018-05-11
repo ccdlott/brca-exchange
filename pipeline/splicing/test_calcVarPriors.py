@@ -339,96 +339,64 @@ class test_calcVarPriors(unittest.TestCase):
         self.assertTrue(withinBoundaries)        
 
     @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
-    def test_varOutsideBoundariesSubstitutionBRCA1(self, getVarStrand):
-        '''Tests that SNS variant outside/inside transcript boundaries are correctly identified for BRCA1'''
+    def test_varOutsideBoundariesSNSInsertionBRCA1(self, getVarStrand):
+        # SNS and insertion variants all have the same value for Pos, Hg38_Start, and Hg38_End
+        '''Tests that SNS/insertion variant outside/inside transcript boundaries are correctly identified for BRCA1'''
         self.variant["Reference_Sequence"] = "NM_007294.3"
         self.variant["Gene_Symbol"] = "BRCA1"
 
-        # checks for BRCA1 SNS variant outside transcript boundaries
+        # checks for BRCA1 SNS/insertion variant outside transcript boundaries
         self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43044274"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertTrue(varOutBounds)
 
-        # checks for BRCA1 SNS variant inside transcript boundaries
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43070957"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertFalse(varOutBounds)
-        
-    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
-    def test_varOutsideBoundariesDeletionBRCA1(self, getVarStrand):
-        '''Tests that deletion variant outside/inside transcript boundaries are correctly identified for BRCA1'''
-        self.variant["Reference_Sequence"] = "NM_007294.3"
-        self.variant["Gene_Symbol"] = "BRCA1"
-
-        # checks for BRCA1 deletion variant outside transcript boundaries
-        self.variant["Pos"] = "43037504"
-        self.variant["Hg38_Start"] = "43037504"
-        self.variant["Hg38_End"] = "43037508"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertTrue(varOutBounds)
-
-        # checks for BRCA1 deletion variant inside transcript boundaries
-        self.variant["Pos"] = "43037404"
-        self.variant["Hg38_Start"] = "43037404"
-        self.variant["Hg38_End"] = "43048457"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertFalse(varOutBounds)
-        
-    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
-    def test_varOutsideBoundariesInsertionBRCA1(self, getVarStrand):
-        '''Tests that insertion variant outside/inside transcript boundaries are correctly identified for BRCA1'''
-        self.variant["Reference_Sequence"] = "NM_007294.3"
-        self.variant["Gene_Symbol"] = "BRCA1"
-
-        # checks for BRCA1 insertion variant outside transcript boundaries
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43039999"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertTrue(varOutBounds)
-
-        # checks for BRCA1 insertion variant inside transcript boundaries
+        # checks for BRCA1 SNS/insertion variant inside transcript boundaries
         self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43076580"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertFalse(varOutBounds)
         
     @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
-    def test_varOutsideBoundariesDelinsBRCA1(self, getVarStrand):
-        '''Tests that delins variant outside/inside transcript boundaries are correctly identified for BRCA1'''
+    def test_varOutsideBoundariesDeletionDelinsBRCA1(self, getVarStrand):
+        '''Tests that deletion/delins variant outside/inside transcript boundaries are correctly identified for BRCA1'''
+        # Deletion and Delins variants have the same value for Pos and Hg38_Start and a different value for Hg38_End
         self.variant["Reference_Sequence"] = "NM_007294.3"
         self.variant["Gene_Symbol"] = "BRCA1"
 
-        # checks for BRCA1 delins variant outside transcript boundaries
+        # checks for BRCA1 deletion/delins variant outside transcript boundaries
         self.variant["Pos"] = "43041562"
         self.variant["Hg38_Start"] = "43041562"
         self.variant["Hg38_End"] = "43041567"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertTrue(varOutBounds)
 
-        # checks for BRCA1 delins variant inside transcript boundaries
-        self.variant["Pos"] = "43041662"
-        self.variant["Hg38_Start"] = "43041662"
-        self.variant["Hg38_End"] = "43046087"
+        # checks for BRCA1 deletion/delins variant inside transcript boundaries
+        self.variant["Pos"] = "43037404"
+        self.variant["Hg38_Start"] = "43037404"
+        self.variant["Hg38_End"] = "43048457"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertFalse(varOutBounds)
         
     @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
-    def test_varOutsideBoundariesSubstitutionBRCA2(self, getVarStrand):
-        '''Tests that SNS variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+    def test_varOutsideBoundariesSNSInsertionBRCA2(self, getVarStrand):
+        '''Tests that SNS/insertion variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+        # SNS and insertion variants all have the same value for Pos, Hg38_Start, and Hg38_End
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
 
-        # checks for BRCA2 SNS variant outside transcript boundaries
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315477"
+        # checks for BRCA2 SNS/insertion variant outside transcript boundaries
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315326"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertTrue(varOutBounds)
 
-        # checks for BRCA2 SNS variant inside transcript boundaries
+        # checks for BRCA2 SNS/insertion variant inside transcript boundaries
         self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326500"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
         self.assertFalse(varOutBounds)
 
     @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
-    def test_varOutsideBoundariesDeletionBRCA2(self, getVarStrand):
-        '''Tests that deletion variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+    def test_varOutsideBoundariesDeletionDelinsBRCA2(self, getVarStrand):
+        '''Tests that deletion/delins variant outside/inside transcript boundaries are correctly identified for BRCA2'''
+        # Deletion and Delins variants have the same value for Pos and Hg38_Start and a different value for Hg38_End
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
 
@@ -440,101 +408,155 @@ class test_calcVarPriors(unittest.TestCase):
         self.assertTrue(varOutBounds)
 
         # checks for BRCA2 deletion variant inside transcript boundaries
-        self.variant["Pos"] = "32316419"
-        self.variant["Hg38_Start"] = "32316419"
-        self.variant["Hg38_End"] = "32316421"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertFalse(varOutBounds)
-        
-    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
-    def test_varOutsideBoundariesInsertionBRCA2(self, getVarStrand):
-        '''Tests that insertion variant outside/inside transcript boundaries are correctly identified for BRCA2'''
-        self.variant["Reference_Sequence"] = "NM_000059.3"
-        self.variant["Gene_Symbol"] = "BRCA2"
-
-        # checks for BRCA2 insertion variant outside transcript boundaries
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315326"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertTrue(varOutBounds)
-
-        # checks for BRCA2 insertion variant inside transcript boundaries
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326517"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertFalse(varOutBounds)
-        
-    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
-    def test_varOutsideBoundariesDelinsBRCA2(self, getVarStrand):
-        '''Tests that delins variant outside/inside transcript boundaries are correctly identified for BRCA2'''
-        self.variant["Reference_Sequence"] = "NM_000059.3"
-        self.variant["Gene_Symbol"] = "BRCA2"
-
-        # checks for BRCA2 delins variant outside transcript boundaries
-        self.variant["Pos"] = "32314941"
-        self.variant["Hg38_Start"] = "32314941"
-        self.variant["Hg38_End"] = "32314945"
-        varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertTrue(varOutBounds)
-
-        # checks for BRCA2 delins variant inside transcript boundaries
         self.variant["Pos"] = "32326575"
         self.variant["Hg38_Start"] = "32326575"
         self.variant["Hg38_End"] = "32326578"
         varOutBounds = calcVarPriors.varOutsideBoundaries(self.variant)
-        self.assertFalse(varOutBounds)
+        self.assertFalse(varOutBounds)        
         
     @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
     @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
-    def test_varInUTRBRCA1(self, varOutsideBoundaries, getVarStrand):
-        '''Tests that variants in 5' and 3' UTR are correctly identified for BRCA1'''
+    def test_varInUTRSNSInsertionBRCA1(self, varOutsideBoundaries, getVarStrand):
+        '''Tests that SNS/insertion variants in 5' and 3' UTR are correctly identified for BRCA1'''
+        # SNS and insertion variants all have the same value for Pos, Hg38_Start, and Hg38_End
         self.variant["Reference_Sequence"] = "NM_007294.3"
         self.variant["Gene_Symbol"] = "BRCA1"
         
-        # checks for BRCA1 variant in 5' UTR
-        self.variant["Pos"] = "43124110"
+        # checks for BRCA1 SNS/insertion variant in 5' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43124110"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertTrue(varInUTR)
         
-        # checks for BRCA1 variant in 3' UTR
-        self.variant["Pos"] = "43045668"
+        # checks for BRCA1 SNS/insertion variant in 3' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43044859"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertTrue(varInUTR)
 
-        # checks for BRCA1 variant in exon
-        self.variant["Pos"] = "43049184"
+        # checks for BRCA1 SNS/insertion variant in exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43049184"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertFalse(varInUTR)
 
-        # checks for BRCA1 variant in intron
-        self.variant["Pos"] = "43049213"
+        # checks for BRCA1 SNS/insertion variant in intron
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43109041"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertFalse(varInUTR)
+
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    def test_varInUTRDeletionDelinsBRCA1(self, varOutsideBoundaries, getVarStrand):
+        '''Tests that deletion/delins variants in 5' and 3' UTR are correctly identified for BRCA1'''
+        # Deletion and Delins variants have the same value for Pos and Hg38_Start and a different value for Hg38_End
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        
+        # checks for BRCA1 deletion/delins variant in 5' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43124128"
+        self.variant["Hg38_End"] = "43124132"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
+        
+        # checks for BRCA1 deletion/delins variant in 3' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43044822"
+        self.variant["Hg38_End"] = "43044824"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
+
+        # checks for BRCA1 deletion/delins variant in exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43094325"
+        self.variant["Hg38_End"] = "43094331"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertFalse(varInUTR)
+
+        # checks for BRCA1 deletion/delins variant in intron
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43063317"
+        self.variant["Hg38_End"] = "43063330"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertFalse(varInUTR)
+
+        # checks for BRCA1 deletion/delins variant that crosses boundary between UTR and other region
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43037404"
+        self.variant["Hg38_End"] = "43048457"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
+
+        # checks for BRCA1 deletion/delins variant that does NOT cross boundary between UTR and other region
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43044823"
+        self.variant["Hg38_End"] = "43044824"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
+
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    def test_varInUTRSNSInsertionBRCA2(self, varOutsideBoundaries, getVarStrand):
+        '''Tests that SNS/insertion variants in 5' and 3' UTR are correctly identified for BRCA2'''
+        # SNS and insertion variants all have the same value for Pos, Hg38_Start, and Hg38_End
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+        
+        # checks for BRCA2 SNS/insertion variant in 5' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315497"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
+        
+        # checks for BRCA2 SNS/insertion variant in 3' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32398781"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
+
+        # checks for BRCA2 SNS/insertion variant in exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326146"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertFalse(varInUTR)
+
+        # checks for BRCA2 SNS/insertion variant in intron
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32396875"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertFalse(varInUTR)
 
     @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
     @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
-    def test_varInUTRBRCA2(self, varOutsideBoundaries, getVarStrand):
-        '''Tests that variants in 5' and 3' UTR are correctly identified for BRCA2'''
+    def test_varInUTRDeletionDelinsBRCA2(self, varOutsideBoundaries, getVarStrand):
+        '''Tests that deletion/delins variants in 5' and 3' UTR are correctly identified for BRCA2'''
+        # Deletion and Delins variants have the same value for Pos and Hg38_Start and a different value for Hg38_End
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
         
-        # checks for BRCA2 variant in 5' UTR
-        self.variant["Pos"] = "32316434"
+        # checks for BRCA2 deletion/delins variant in 5' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32315664"
+        self.variant["Hg38_End"] = "32315666"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertTrue(varInUTR)
         
-        # checks for BRCA2 variant in 3' UTR
-        self.variant["Pos"] = "32398781"
+        # checks for BRCA2 deletion/delins variant in 3' UTR
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32398787"
+        self.variant["Hg38_End"] = "32398790"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertTrue(varInUTR)
 
-        # checks for BRCA2 variant in exon
-        self.variant["Pos"] = "32394719"
+        # checks for BRCA2 deletion/delins variant in exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32336799"
+        self.variant["Hg38_End"] = "32336800"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertFalse(varInUTR)
 
-        # checks for BRCA2 variant in intron
-        self.variant["Pos"] = "32396875"
+        # checks for BRCA2 deletion/delins variant in intron
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32325206"
+        self.variant["Hg38_End"] = "32325242"
         varInUTR = calcVarPriors.varInUTR(self.variant)
         self.assertFalse(varInUTR)
+
+        # checks for BRCA2 deletion/delins variant that crosses boundary between UTR and other region
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32316453"
+        self.variant["Hg38_End"] = "32316469"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
+
+        # checks for BRCA2 deletion/delins variant that does NOT cross boundary between UTR and other region
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32316435"
+        self.variant["Hg38_End"] = "32316436"
+        varInUTR = calcVarPriors.varInUTR(self.variant)
+        self.assertTrue(varInUTR)
 
     def test_getExonBoundariesBRCA1(self):
         '''
@@ -702,33 +724,51 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["Reference_Sequence"] = "NM_007294.3"
         self.variant["Gene_Symbol"] = "BRCA1"
 
-        # checks BRCA1 5' exon boundary (last base in intron)
-        self.variant["Pos"] = "43104957"
+        # checks BRCA1 SNS/insertion variant at 5' exon boundary (last base in intron)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104957"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertFalse(inExon)
 
-        # checks BRCA1 5' exon boundary (first base in exon)
-        self.variant["Pos"] = "43104956"
+        # checks BRCA1 SNS/insertion variant at 5' exon boundary (first base in exon)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104956"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertTrue(inExon)
 
-        # checks BRCA1 3' exon boundary (last base in exon)
-        self.variant["Pos"] = "43067608"
+        # checks BRCA1 SNS/insertion variant 3' exon boundary (last base in exon)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43067608"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertTrue(inExon)
 
-        # checks BRCA1 3' exon boundary (first base in intron)
-        self.variant["Pos"] = "43067607"
+        # checks BRCA1 SNS/insertion variant 3' exon boundary (first base in intron)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43067607"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertFalse(inExon)
         
-        # checks BRCA1 variant inside an exon
-        self.variant["Pos"] = "43049176"
+        # checks BRCA1 SNS/insertion variant inside an exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43049176"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertTrue(inExon)
 
-        # checks BRCA1 variant outside an exon
-        self.variant["Pos"] = "43045827"
+        # checks BRCA1 SNS/insertion variant outside an exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43045827"
+        inExon = calcVarPriors.varInExon(self.variant)
+        self.assertFalse(inExon)
+
+        # checks BRCA1 deletion/delins variant that crosses exon boundary
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43045963"
+        self.variant["Hg38_End"] = "43048457"
+        inExon = calcVarPriors.varInExon(self.variant)
+        self.assertTrue(inExon)
+
+        # checks BRCA1 deletion/delins variant that is entirely inside exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43070967"
+        self.variant["Hg38_End"] = "43070969"
+        inExon = calcVarPriors.varInExon(self.variant)
+        self.assertTrue(inExon)
+
+        # checks BRCA1 deletion/delins variant that is entirely outside exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43106544"
+        self.variant["Hg38_End"] = "43106548"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertFalse(inExon)
 
@@ -740,40 +780,59 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
 
-        # checks BRCA2 5' exon boundary (last base in intron)
-        self.variant["Pos"] = "32357741"
+        # checks BRCA2 SNS/insertion variant at 5' exon boundary (last base in intron)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32357741"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertFalse(inExon)
 
-        # checks BRCA2 5' exon boundary (first base in exon)
-        self.variant["Pos"] = "32357742"
+        # checks BRCA2 SNS/insertion variant at 5' exon boundary (first base in exon)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32357742"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertTrue(inExon)
 
-        # checks BRCA2 3' exon boundary (last base in exon)
-        self.variant["Pos"] = "32370557"
+        # checks BRCA2 SNS/insertion variant at 3' exon boundary (last base in exon)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32370557"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertTrue(inExon)
 
-        # checks BRCA2 3' exon boundary (first base in intron)
-        self.variant["Pos"] = "32370558"
+        # checks BRCA2 SNS/insertion variant at 3' exon boundary (first base in intron)
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32370558"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertFalse(inExon)
         
-        # checks BRCA2 variant inside an exon
-        self.variant["Pos"] = "32398201"
+        # checks BRCA2 SNS/insertion variant inside an exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32398201"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertTrue(inExon)
 
-        # cehcks BRCA2 variant outside an exon
-        self.variant["Pos"] = "32396873"
+        # cehcks BRCA2 SNS/insertion variant outside an exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32396873"
+        inExon = calcVarPriors.varInExon(self.variant)
+        self.assertFalse(inExon)
+
+        # checks BRCA2 deletion/delins variant that crosses exon boundary
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32379749"
+        self.variant["Hg38_End"] = "32379751"
+        inExon = calcVarPriors.varInExon(self.variant)
+        self.assertTrue(inExon)
+
+        # checks BRCA2 deletion/delins variant that is entirely inside exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32357802"
+        self.variant["Hg38_End"] = "32357804"
+        inExon = calcVarPriors.varInExon(self.variant)
+        self.assertTrue(inExon)
+
+        # checks BRCA2 deletion/delins variant that is entirely outside exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32363176"
+        self.variant["Hg38_End"] = "32363177"
         inExon = calcVarPriors.varInExon(self.variant)
         self.assertFalse(inExon)
 
     @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
     @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca1Exons)
     @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
-    def test_getVarExonNumberSNSBRCA1(self, varInExon, getExonBoundaries, getVarStrand):
+    def test_getVarExonNumberSNSBRCA1(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
         '''Tests that exon number is set correctly for minus strand (BRCA1) variant in exon'''
         self.variant["Reference_Sequence"] = "NM_007294.3"
         self.variant["Gene_Symbol"] = "BRCA1"
@@ -785,9 +844,10 @@ class test_calcVarPriors(unittest.TestCase):
         self.assertEquals(varExonNum, "exon13")
 
     @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
     @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
     @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
-    def test_getVarExonNumberSNSBRCA2(self, varInExon, getExonBoundaries, getVarStrand):
+    def test_getVarExonNumberSNSBRCA2(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
         '''Tests that exon number is set correctly for plus strand (BRCA2) variant in exon'''
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
@@ -796,12 +856,143 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["Pos"] = "32325166"
         varExonNum = calcVarPriors.getVarExonNumberSNS(self.variant)
         self.assertEquals(varExonNum, "exon4")
+
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca1Exons)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    def test_getVarExonNumberStructuralVarDeletionBRCA1(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
+        '''Tests that exon number is correctly identified for minus strand (BRCA1) deletion variants'''
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+
+        # checks for BRCA1 deletion variant that spans multiple exons
+        # this variant spans exons 20-22
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43048588"
+        self.variant["Hg38_End"] = "43059975"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon20", "exon21", "exon22"])
+
+        # checks for BRCA1 deletion variant that is contained in a single exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43051062"
+        self.variant["Hg38_End"] = "43051116"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon21"])
+
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    def test_getVarExonNumberStructuralVarDeletionBRCA2(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
+        '''Tests that exon number is correctly identified for plus strand (BRCA2) deletion variants'''
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+
+        # checks for BRCA2 deletion variant that spans multiple exons
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32340772"
+        self.variant["Hg38_End"] = "32355272"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon11", "exon12", "exon13", "exon14"])
+
+        # checks for BRCA2 deletion variant that is contained in a single exon
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32317677"
+        self.variant["Hg38_End"] = "32321583"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon3"])
+
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca1Exons)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    def test_getVarExonNumberStructuralVarInsertionBRCA1(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
+        '''Tests that exon number is correctly identified for minus strand (BRCA1) insertion variants'''
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+
+        # checks for large BRCA1 insertion variant
+        self.variant["HGVS_cDNA"] = "c.442-952_547dup"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43099774"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon8"])
+
+        # checks for small BRCA1 insertion variant
+        self.variant["HGVS_cDNA"] = "c.4107_4108insATCT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43091021"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon12"])
+
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    def test_getVarExonNumberStructuralVarInsertionBRCA2(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
+        '''Tests that exon number is correctly identified for plus strand (BRCA2) deletion variants'''
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+
+        # checks for large BRCA2 insertion variant
+        self.variant["HGVS_cDNA"] = "c.9517_9518insTCTAAGTCAAATGTTTTCAAAACAATTGACATTGTTTTCT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32396912"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon26"])
+
+        # checks for small BRCA2 insertion variant
+        self.variant["HGVS_cDNA"] = "c.2175dupA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32336524"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon11"])
+
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca1Exons)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    def test_getVarExonNumberStructuralVarDelinsBRCA1(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
+        '''Tests that exon number is correctly identified for minus strand (BRCA1) delins variants'''
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+
+        # checks for large BRCA1 delins variant
+        self.variant["HGVS_cDNA"] = "c.5468-285_*4019delinsCACAG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43041662"
+        self.variant["Hg38_End"] = "43046087"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon24"])
+
+        # checks for small BRCA1 delins variant
+        self.variant["HGVS_cDNA"] = "c.5331_5332+1delAGGinsCAACAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43051062"
+        self.variant["Hg38_End"] = "43051064"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon21"])
+
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    def test_getVarExonNumberStructuralVarDelinsBRCA2(self, varInExon, getVarType, getExonBoundaries, getVarStrand):
+        '''Tests that exon number is correctly identified for plus strand (BRCA2) delins variants'''
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+
+        # checks for large BRCA2 delins variant
+        self.variant["HGVS_cDNA"] = "c.5550_5566delAATCGTTTGTGTTTCACinsTTGGCT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32339905"
+        self.variant["Hg38_End"] = "32339921"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon11"])
+
+        # checks for small BRCA2 delins variant
+        self.variant["HGVS_cDNA"] = "c.593_596delTAGCinsAGG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32326575"
+        self.variant["Hg38_End"] = "32326578"
+        varExonNum = calcVarPriors.getVarExonNumberStructuralVar(self.variant)
+        self.assertItemsEqual(varExonNum, ["exon7"])
         
     @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca1RefSpliceDonorBounds)
-    def test_varInSpliceRegionDonorBRCA1Ref(self, getRefDonorBoundaries):
+    def test_varInSpliceRegionDonorBRCA1SNSRef(self, getRefDonorBoundaries):
         '''
         Tests that:
-        1. Variant is correctly identified as in or NOT in a splice donor region 
+        1. SNS variant is correctly identified as in or NOT in a splice donor region 
            for multiple positions across multiple exons in BRCA1
         '''
         self.variant["Reference_Sequence"] = "NM_007294.3"
@@ -810,47 +1001,47 @@ class test_calcVarPriors(unittest.TestCase):
         deNovo = False
 
         #checks that 7th base in intron is NOT counted as in splice donor
-        self.variant["Pos"] = "43063326"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43063326"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceDonor)
         
         # checks that first base in intron counted as in splice donor
-        self.variant["Pos"] =  "43097243"
+        self.variant["Pos"] =  self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43097243"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that middle base in intron counted as in splice donor
-        self.variant["Pos"] = "43095842"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43095842"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that last base in intron counted as in splice donor
-        self.variant["Pos"] = "43091429"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43091429"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that first base in exon counted as in splice donor
-        self.variant["Pos"] = "43090946"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43090946"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that middle base in exon counted as in splice donor
-        self.variant["Pos"] = "43082405"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43082405"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that last base in exon counted as in splice donor
-        self.variant["Pos"] = "43076488"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43076488"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that 4th to last base in exon is NOT counted as in splice donor
-        self.variant["Pos"] = "43057055"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43057055"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceDonor)
 
         # checks that region after exon 24 is  NOT counted as in splice donor
-        self.variant["Pos"] = "43044294"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43044294"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceDonor)
 
@@ -864,28 +1055,120 @@ class test_calcVarPriors(unittest.TestCase):
         deNovo = True
 
         # checks that variant in an exon is marked as being in a de novo splice donor region
-        self.variant["Pos"] = "43104232"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104232"
         inDeNovoDonorRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inDeNovoDonorRegion)
 
         # checks that variant in intronic portion of reference splice donor is marked as being in a de novo splice donor region
-        self.variant["Pos"] = "43104117"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104117"
         inDeNovoDonorRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inDeNovoDonorRegion)
 
     @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca1Exons)
     @mock.patch('calcVarPriors.varInExon', return_value = False)
-    def test_varInSpliceRegionDonorBRCA1DeNovoFalse(self, getExonBoundaries, varInExon):
-        '''Tests that function correctly identifies if variant is NOT IN a de novo splice region for minus strand gene (BRCA1)'''
+    def test_varInSpliceRegionDonorBRCA1SNSDeNovoFalse(self, getExonBoundaries, varInExon):
+        '''Tests that function correctly identifies if SNS variant is NOT IN a de novo splice region for minus strand gene (BRCA1)'''
         self.variant["Reference_Sequence"] = "NM_007294.3"
         self.variant["Gene_Symbol"] = "BRCA1"
         donor = True
         deNovo = True
 
         # checks that variant in an intron is NOT marked as being in a de novo splice donor region
-        self.variant["Pos"] = "43104101"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104101"
         inDeNovoDonorRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inDeNovoDonorRegion)
+
+    @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca1RefSpliceDonorBounds)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca1Exons)
+    def test_varInSpliceRegionDonorBRCA1DeletionDelins(self, getRefSpliceDonorBoundaries, getVarStrand,
+                                                       getVarType, getExonBoundaries):
+        '''
+        Tests that funciton correctly identifies deletion/delins variants as in/NOT in 
+           ref and de novo splice regions for minus strand gene (BRCA1)
+        '''
+        # Deletion and Delins variants have the same value for Pos and Hg38_Start and a different value for Hg38_End
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        
+        # checks that deletion/delins variant entirely in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.4185_4185+3delGGTA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43090940"
+        self.variant["Hg38_End"] = "43090944"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertTrue(inSpliceRegion)
+
+        # checks that deletion/delins variant partially in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.190_211delTGTAAGAATGATATAACCAAAA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43106456"
+        self.variant["Hg38_End"] = "43106478"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertTrue(inSpliceRegion)
+        
+        # checks that deletion/delins variant entirely NOT in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.5450_5451delAG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43047658"
+        self.variant["Hg38_End"] = "43047660"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertFalse(inSpliceRegion)
+        
+        # checks that deletion/delins variant entirely in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.239_241delGTCinsTT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43104928"
+        self.variant["Hg38_End"] = "43104930"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertTrue(inSpliceRegion)
+    
+        # checks that deletion/delins variant partially in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.208_212+22del27"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43106433"
+        self.variant["Hg38_End"] = "43106460"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertTrue(inSpliceRegion)
+
+        # checks that deletion/delins variant entirely NOT in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.441+51_441+52delinsCT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43104070"
+        self.variant["Hg38_End"] = "43104071"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertFalse(inSpliceRegion)
+        
+    @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca1RefSpliceDonorBounds)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca1Exons)
+    def test_varInSpliceRegionDonorBRCA1Insertion(self, getRefSpliceDonorBoundaries, getVarStrand,
+                                                  getExonBoundaries):
+        '''
+        Tests that funciton correctly identifies insertion variants as in/NOT in 
+           ref and de novo splice regions for minus strand gene (BRCA1)
+        '''
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        
+        # checks that insertion variant in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.5152+3_5152+4insT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43063869"
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertTrue(inSpliceRegion)
+
+        # checks that insertion variant NOT in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.190_191insAATGTAAGGATGATATAAA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43106477"
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertFalse(inSpliceRegion)
+        
+        # checks that insertion variant in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.4163dupA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43090966"
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertTrue(inSpliceRegion)
+        
+        # checks that insertion variatn NOT in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.4185+21_4185+22dupTG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43090921"
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertFalse(inSpliceRegion)
 
     @mock.patch('calcVarPriors.varInSpliceRegion', return_value = True)
     @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca1RefSpliceDonorBounds)
@@ -907,10 +1190,10 @@ class test_calcVarPriors(unittest.TestCase):
         self.assertEquals(exonDonorBoundsBRCA1["exon16"]["donorEnd"], spliceDonorRegion["donorEnd"])
 
     @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca2RefSpliceDonorBounds)
-    def test_varInSpliceRegionDonorBRCA2Ref(self, getRefSpliceDonorBoundaries):
+    def test_varInSpliceRegionDonorBRCA2SNSRef(self, getRefSpliceDonorBoundaries):
         '''
         Tests that:
-        1. Variant is correctly identified as in or NOT in a splice donor region 
+        1. SNS variant is correctly identified as in or NOT in a splice donor region 
            for multiple positions across multiple exons in BRCA2
         '''
         self.variant["Reference_Sequence"] = "NM_000059.3"
@@ -919,83 +1202,175 @@ class test_calcVarPriors(unittest.TestCase):
         deNovo = False
 
         # checks that 7th base in intron is NOT counted as in splice donor
-        self.variant["Pos"] = "32363540"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32363540"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceDonor)
 
         # checks that first base in intron counted as in splice donor
-        self.variant["Pos"] = "32329493"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32329493"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that middle base in intron counted as in splice donor
-        self.variant["Pos"] = "32331033"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32331033"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that last base in intron counted as in splice donor
-        self.variant["Pos"] = "32333393"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32333393"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that first base in exon counted as in splice donor
-        self.variant["Pos"] = "32341194"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32341194"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that middle base in exon counted as in splice donor
-        self.variant["Pos"] = "32344652"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32344652"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that last base in exon counted as in splice donor
-        self.variant["Pos"] = "32346896"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32346896"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceDonor)
 
         # checks that 4th to last base in exon is NOT counted as in splice donor
-        self.variant["Pos"] = "32370554"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32370554"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceDonor)
 
         # checks that region after  exon 27 is NOT counted as in splice donor
-        self.variant["Pos"] = "32399672"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32399672"
         inSpliceDonor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceDonor)
 
     @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
     @mock.patch('calcVarPriors.varInExon', return_value = True)
-    def test_varInSpliceRegionDonorBRCA2DeNovoTrue(self, getExonBoundaries, varInExon):
-        '''Tests that function correctly identifies if variant is IN a de novo splice region for plus strand gene (BRCA2)'''
+    def test_varInSpliceRegionDonorBRCA2SNSDeNovoTrue(self, getExonBoundaries, varInExon):
+        '''Tests that function correctly identifies if SNS variant is IN a de novo splice region for plus strand gene (BRCA2)'''
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
         donor = True
         deNovo = True
 
         # checks that variant in an exon is marked as being in a de novo splice donor region
-        self.variant["Pos"] = "32379784"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32379784"
         inDeNovoDonorRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inDeNovoDonorRegion)
 
         # checks that variant in intronic portion of reference splice donor is marked as being in a de novo splice donor region
-        self.variant["Pos"] = "32379914"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32379914"
         inDeNovoDonorRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inDeNovoDonorRegion)
 
     @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
     @mock.patch('calcVarPriors.varInExon', return_value = False)
-    def test_varInSpliceRegionDonorBRCA2DeNovoFalse(self, getExonBoundaries, varInExon):
-        '''Tests that function correctly identifies if variant is NOT IN a de novo splice region for pluis strand gene (BRCA2)'''
+    def test_varInSpliceRegionDonorBRCA2SNSDeNovoFalse(self, getExonBoundaries, varInExon):
+        '''Tests that function correctly identifies if SNS variant is NOT IN a de novo splice region for pluis strand gene (BRCA2)'''
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["Gene_Symbol"] = "BRCA2"
         donor = True
         deNovo = True
 
         # checks that variant in an intron is NOT marked as being in a de novo splice donor region
-        self.variant["Pos"] = "32379743"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32379743"
         inDeNovoDonorRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inDeNovoDonorRegion)
 
+    @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca2RefSpliceDonorBounds)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
+    def test_varInSpliceRegionDonorBRCA2DeletionDelins(self, getRefSpliceDonorBoundaries, getVarStrand,
+                                                       getVarType, getExonBoundaries):
+        '''
+        Tests that funciton correctly identifies deletion/delins variants as in/NOT in 
+           ref and de novo splice regions for plus strand gene (BRCA2)
+        '''
+        # Deletion and Delins variants have the same value for Pos and Hg38_Start and a different value for Hg38_End
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+        
+        # checks that deletion/delins variant entirely in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.134+2delT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43115723"
+        self.variant["Hg38_End"] = "43115724"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertTrue(inSpliceRegion)
+
+        # checks that deletion/delins variant partially in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.1905_1909delTTCAG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32333382"
+        self.variant["Hg38_End"] = "32333387"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertTrue(inSpliceRegion)
+        
+        # checks that deletion/delins variant entirely NOT in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.6841+7_6841+8delGT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32341202"
+        self.variant["Hg38_End"] = "32341204"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertFalse(inSpliceRegion)
+        
+        # checks that deletion/delins variant entirely in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.765_770delCACAAAinsAAACAAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32331002"
+        self.variant["Hg38_End"] = "32331007"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertTrue(inSpliceRegion)
+    
+        # checks that deletion/delins variant partially in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.8954-1_8955delGTTinsAA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32379749"
+        self.variant["Hg38_End"] = "32379751"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertTrue(inSpliceRegion)
+
+        # checks that deletion/delins variant entirely NOT in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = "c.8488-20_8488-17del"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32370932"
+        self.variant["Hg38_End"] = "32370936"
+        inSpliceRegion = calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertFalse(inSpliceRegion)
+        
+    @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca2RefSpliceDonorBounds)
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getExonBoundaries', return_value = brca2Exons)
+    def test_varInSpliceRegionDonorBRCA2Insertion(self, getRefSpliceDonorBoundaries, getVarStrand,
+                                                  getExonBoundaries):
+        '''
+        Tests that funciton correctly identifies insertion variants as in/NOT in 
+           ref and de novo splice regions for plus strand gene (BRCA2)
+        '''
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+        self.variant["Gene_Symbol"] = "BRCA2"
+        
+        # checks that insertion variant in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = ""
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = ""
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertTrue(inSpliceRegion)
+
+        # checks that insertion variant NOT in ref splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = ""
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = ""
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=False)
+        self.assertFalse(inSpliceRegion)
+        
+        # checks that insertion variant in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = ""
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = ""
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertTrue(inSpliceRegion)
+        
+        # checks that insertion variatn NOT in de novo splice donor region is correctly identified
+        self.variant["HGVS_cDNA"] = ""
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = ""
+        inSpliceRegion= calcVarPriors.varInSpliceRegion(self.variant, donor=True, deNovo=True)
+        self.assertFalse(inSpliceRegion)
+        
     @mock.patch('calcVarPriors.varInSpliceRegion', return_value = True)
     @mock.patch('calcVarPriors.getRefSpliceDonorBoundaries', return_value = brca2RefSpliceDonorBounds)
     def test_getVarSpliceRegionBoundsDonorBRCA2(self, varInSpliceRegion, getRefSpliceDonorBoundaries):
@@ -1028,47 +1403,47 @@ class test_calcVarPriors(unittest.TestCase):
         deNovo = False
 
         # checks that -21st base in intron is NOT counted as in splice acceptor
-        self.variant["Pos"] = "43067716"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43067716"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceAcceptor)
         
         # checks that first base in intron counted as in splice acceptor
-        self.variant["Pos"] = "43124135"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43124135"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that middle base in intron counted as in splice acceptor
-        self.variant["Pos"] = "43115787"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43115787"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that last base in intron counted as in splice acceptor
-        self.variant["Pos"] = "43106534"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43106534"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that first base in exon counted as in splice acceptor
-        self.variant["Pos"] = "43104956"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104956"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that middle base in exon counted as in splice acceptor
-        self.variant["Pos"] = "43104260"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104260"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that last base in exon counted as in splice acceptor
-        self.variant["Pos"] = "43099878"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43099878"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that 4th base in exon is NOT counted as in splice acceptor
-        self.variant["Pos"] = "43063948"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43063948"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceAcceptor)
 
         # checks that region before exon 1 is NOT counted as in splice acceptor
-        self.variant["Pos"] = "431254483"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "431254483"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceAcceptor)
 
@@ -1104,47 +1479,47 @@ class test_calcVarPriors(unittest.TestCase):
         deNovo = False
 
         # checks that -21st base in intron is NOT counted as in splice acceptor
-        self.variant["Pos"] = "32357721"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32357721"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceAcceptor)
 
         # checks that first base in intron counted as in splice acceptor
-        self.variant["Pos"] = "32316402"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32316402"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that middle base in intron counted as in splice acceptor
-        self.variant["Pos"] = "32319069"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32319069"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that last base in intron counted as in splice acceptor
-        self.variant["Pos"] = "32325075"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32325075"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that first base in exon counted as in splice acceptor
-        self.variant["Pos"] = "32326101"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326101"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that middle base in exon counted as in splice acceptor
-        self.variant["Pos"] = "32326243"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326243"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that last base in exon counted as in splice acceptor
-        self.variant["Pos"] = "32326501"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32326501"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertTrue(inSpliceAcceptor)
 
         # checks that 4th base in exon is NOT counted as in splice acceptor
-        self.variant["Pos"] = "32362526"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32362526"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceAcceptor)
 
         # checks that region before exon 1 is NOT counted as in splice acceptor
-        self.variant["Pos"] = "32315479"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315479"
         inSpliceAcceptor = calcVarPriors.varInSpliceRegion(self.variant, donor=donor, deNovo=deNovo)
         self.assertFalse(inSpliceAcceptor)
 
@@ -1332,12 +1707,12 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
         
         # BRCA1 variant outside transcript boundaries (before txn start)
-        self.variant["Pos"] = "43125600"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_Start"] = "43125600"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["outBounds"])
 
         # BRCA1 variant outside transcript boundaries (after txn end)
-        self.variant["Pos"] = "43044000"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_Start"] = "43044000"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["outBounds"])
 
@@ -1346,12 +1721,12 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
         
         # BRCA2 variant outside transcript boundaries (before txn start)
-        self.variant["Pos"] = "32315300"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_Start"] = "32315300"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["outBounds"])
 
         # BRCA2 variant outside transcript boundaries (after txn end)
-        self.variant["Pos"] = "32399800"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_Start"] = "32399800"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["outBounds"])
 
@@ -1410,25 +1785,25 @@ class test_calcVarPriors(unittest.TestCase):
                 
         # BRCA1 variant in ENIGMA CI domain splice donor region
         boundaries = "enigma"
-        self.variant["Pos"] = "43104868"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104868"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceDonor"])
         
         # BRCA1 variant in PRIORS CI domain splice donor region
         boundaries = "priors"
-        self.variant["Pos"] = "43106456"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43106456"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceDonor"])
 
         # BRCA1 variant in ENIGMA CI domain splice acceptor region
         boundaries = "enigma"
-        self.variant["Pos"] = "43063373"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43063373"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceAcceptor"])
 
         # BRCA1 variant in PRIORS CI domain splice acceptor region
         boundaries = "priors"
-        self.variant["Pos"] = "43057135"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43057135"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceAcceptor"])
         
@@ -1448,25 +1823,25 @@ class test_calcVarPriors(unittest.TestCase):
 
         # BRCA2 variant in ENIGMA CI splice donor region
         boundaries = "enigma"
-        self.variant["Pos"] = "32357929"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32357929"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceDonor"])
 
         # BRCA2 variant in PRIORS CI splice donor region
         boundaries = "priors"
-        self.variant["Pos"] = "32316527"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32316527"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceDonor"])
 
         # BRCA2 variant in ENIGMA CI splice acceptor region
         boundaries = "enigma"
-        self.variant["Pos"] = "32376670"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32376670"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceAcceptor"])
 
         # BRCA2 variant in PRIORS CI splice acceptor region
         boundaries = "priors"
-        self.variant["Pos"] = "32363179"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32363179"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inCISpliceAcceptor"])
 
@@ -1482,12 +1857,12 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
         
         # BRCA1 variant in splice donor region
-        self.variant["Pos"] = "43074331"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43074331"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inSpliceDonor"])
         
         # BRCA1 variant in splice acceptor region
-        self.variant["Pos"] = "43082575"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43082575"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inSpliceAcceptor"])
 
@@ -1503,12 +1878,12 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
         
         # BRCA2 variant in splice donor region
-        self.variant["Pos"] = "32333388"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32333388"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inSpliceDonor"])
         
         # BRCA2 variant in splice acceptor region
-        self.variant["Pos"] = "32329443"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32329443"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inSpliceAcceptor"])
 
@@ -1523,7 +1898,7 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
 
         # BRCA1 variant in exon
-        self.variant["Pos"] = "43071220"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43071220"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inExon"])
         
@@ -1532,7 +1907,7 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
 
         # BRCA2 variant in exon
-        self.variant["Pos"] = "32336289"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32336289"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inExon"])
 
@@ -1547,12 +1922,12 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
 
         # BRCA1 variant in 5' UTR
-        self.variant["Pos"] = "43124138"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43124138"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inUTR"])
 
         # BRCA1 variant in 3' UTR
-        self.variant["Pos"] = "43045660"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43045660"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inUTR"])
         
@@ -1567,12 +1942,12 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
 
         # BRCA2 variant in 5' UTR
-        self.variant["Pos"] = "32316398"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32316398"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inUTR"])
 
         # BRCA2 variant in 3' UTR
-        self.variant["Pos"] = "32398790"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32398790"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inUTR"])
 
@@ -1586,7 +1961,7 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
 
         # BRCA1 variant in intron
-        self.variant["Pos"] = "43071263"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43071263"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inIntron"])
 
@@ -1595,7 +1970,7 @@ class test_calcVarPriors(unittest.TestCase):
         boundaries = "enigma"
         
         # BRCA2 variant in intron
-        self.variant["Pos"] = "32344537"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32344537"
         varLoc = calcVarPriors.getVarLocation(self.variant, boundaries)
         self.assertEquals(varLoc, variantLocations["inIntron"])
 

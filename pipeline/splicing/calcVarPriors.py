@@ -377,23 +377,27 @@ def varInUTR(variant):
     varOutBounds = varOutsideBoundaries(variant)
     if varOutBounds == False:
         varGenPos = int(variant["Pos"])
+        # note that variant["Pos"] is equal to variant["Hg38_Start"]
+        # so checking varGenPos is the same as checking Hg38_Start
+        varGenEnd = int(variant["Hg38_End"])
         varTranscript = variant["Reference_Sequence"]
         transcriptData = getTranscriptData(varTranscript)
         varStrand = getVarStrand(variant)
-        if varStrand == "+":
-            tsnStart = int(transcriptData["cdsStart"])
-            tsnEnd = int(transcriptData["cdsEnd"])
-            if varGenPos < tsnStart:
-                return True
-            elif varGenPos > tsnEnd:
-                return True
-        else:
-            tsnStart = int(transcriptData["cdsEnd"])
-            tsnEnd = int(transcriptData["cdsStart"])
-            if varGenPos > tsnStart:
-                return True
-            elif varGenPos < tsnEnd:
-                return True
+        for genPos in xrange(varGenPos, varGenEnd + 1):     
+            if varStrand == "+":
+                tsnStart = int(transcriptData["cdsStart"])
+                tsnEnd = int(transcriptData["cdsEnd"])
+                if genPos < tsnStart:
+                    return True
+                elif genPos > tsnEnd:
+                    return True
+            else:
+                tsnStart = int(transcriptData["cdsEnd"])
+                tsnEnd = int(transcriptData["cdsStart"])
+                if genPos > tsnStart:
+                    return True
+                elif genPos < tsnEnd:
+                    return True
     return False
                 
 def getExonBoundaries(variant):
@@ -513,6 +517,7 @@ def varInExon(variant):
     varOutBounds = varOutsideBoundaries(variant)
     if varOutBounds == False:
         varGenPos = int(variant["Pos"])
+        varGenEnd = int(variant["Hg38_End"])
         varExons = getExonBoundaries(variant)
         varStrand = getVarStrand(variant)
         for exon in varExons.keys():
@@ -531,7 +536,7 @@ def getVarExonNumberSNS(variant):
     Given a SNS variant, checks that variant is in an exon
     If variant in an exon, returns the number of the exon variant is located within in format "exonN"
     '''
-    if varInExon(variant) == True:
+    if varInExon(variant) == True and getVarType(variant) == "substitution":
         varGenPos = int(variant["Pos"])
         varExons = getExonBoundaries(variant)
         varStrand = getVarStrand(variant)
@@ -545,6 +550,33 @@ def getVarExonNumberSNS(variant):
                 if varGenPos <= exonStart and varGenPos > exonEnd:
                     return exon
 
+def getVarExonNumberStructuralVar(variant):
+    '''
+    Given a structural variant, checks that part of variant is in an exon
+    If part of variant is in an exon, returns a list of the exons that variant is located within
+      in format "exonN"
+    '''
+    if varInExon(variant) == True and getVarType(variant) != "substitution":
+        varExons = getExonBoundaries(variant)
+        varStrand = getVarStrand(variant)
+        varGenPos = int(variant["Pos"])
+        varGenEnd = int(variant["Hg38_End"])
+        exonList = []
+        for exon in varExons.keys():
+            exonStart = int(varExons[exon]["exonStart"])
+            exonEnd = int(varExons[exon]["exonEnd"])
+            for genPos in xrange(varGenPos, varGenEnd + 1):     
+                if varStrand == "+":
+                    if genPos > exonStart and genPos <= exonEnd:
+                        if exon not in exonList:
+                             exonList.append(exon)
+                else:
+                    withinBoundaries = checkWithinBoundaries(varStrand, genPos, exonStart, exonEnd)
+                    if withinBoundaries == True:
+                        if exon not in exonList:
+                            exonList.append(exon)
+        return exonList
+
 def varInSpliceRegion(variant, donor=False, deNovo=False):
     '''
     Given a variant, determines if a variant is in reference transcript's splice donor/acceptor region
@@ -554,6 +586,7 @@ def varInSpliceRegion(variant, donor=False, deNovo=False):
     If donor=False and deNovo=True, checks if variant is in a de novo splice acceptor region
     Returns True if variant is in a splice region, false otherwise
     '''
+    # TO DO start here for working on indel modifications
     if donor == False and deNovo == False:
         regionBounds = getSpliceAcceptorBoundaries(variant, STD_ACC_INTRONIC_LENGTH, STD_ACC_EXONIC_LENGTH)
     elif donor == False and deNovo == True:
@@ -561,6 +594,13 @@ def varInSpliceRegion(variant, donor=False, deNovo=False):
     elif donor == True:
         # gets reference donor splice boundaries, if deNovo = True then entireity of exon will be included below
         regionBounds = getRefSpliceDonorBoundaries(variant, STD_DONOR_INTRONIC_LENGTH, STD_DONOR_EXONIC_LENGTH)
+    varGenPos = int(variant["Pos"])
+    varGenEnd = int(variant["Hg38_End"])
+    varStrand = getVarStrand(variant)
+    if getVarType(variant) == "deletion" or getVarType(variant) == "delins":
+        # +1 due to RefSeq numbering and position
+        # currently not working with 1 bp deletions, need to fix
+        varGenPos = varGenPos + 1
     for exon in regionBounds.keys():
         if donor == False:
             regionStart = regionBounds[exon]["acceptorStart"]
@@ -568,14 +608,15 @@ def varInSpliceRegion(variant, donor=False, deNovo=False):
         else:
             regionStart = regionBounds[exon]["donorStart"]
             regionEnd = regionBounds[exon]["donorEnd"]
-        withinBoundaries = checkWithinBoundaries(getVarStrand(variant), int(variant["Pos"]), regionStart, regionEnd)
-        if withinBoundaries == True and donor == False:
-            return True
-        elif donor == True and deNovo == False and withinBoundaries == True:
-            return True
-        # because de novo donor region includes reference splice donor region and entirity of exon
-        elif donor == True and deNovo == True and (withinBoundaries == True or varInExon(variant) == True):
-            return True
+        for genPos in xrange(varGenPos, varGenEnd + 1):     
+            withinBoundaries = checkWithinBoundaries(varStrand, genPos, regionStart, regionEnd)
+            if withinBoundaries == True and donor == False:
+                return True
+            elif donor == True and deNovo == False and withinBoundaries == True:
+                return True
+            # because de novo donor region includes reference splice donor region and entirity of exon
+            elif donor == True and deNovo == True and (withinBoundaries == True or varInExon(variant) == True):
+                return True
     return False
 
 def getVarSpliceRegionBounds(variant, donor=False, deNovo=False):
