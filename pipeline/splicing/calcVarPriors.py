@@ -520,6 +520,14 @@ def varInExon(variant):
         varGenEnd = int(variant["Hg38_End"])
         varExons = getExonBoundaries(variant)
         varStrand = getVarStrand(variant)
+        varType = getVarType(variant)
+        if varType == "deletion" or varType == "delins":
+            if varStrand == "-":
+                # because RefSeq numbering decreases from left to right for minus strand
+                varGenEnd = varGenEnd - 1
+            else:
+                # because RefSeq numbering increases from left to right for plus strand
+                varGenPos = varGenPos + 1
         for exon in varExons.keys():
             exonStart = int(varExons[exon]["exonStart"])
             exonEnd = int(varExons[exon]["exonEnd"])
@@ -586,7 +594,6 @@ def varInSpliceRegion(variant, donor=False, deNovo=False):
     If donor=False and deNovo=True, checks if variant is in a de novo splice acceptor region
     Returns True if variant is in a splice region, false otherwise
     '''
-    # TO DO start here for working on indel modifications
     if donor == False and deNovo == False:
         regionBounds = getSpliceAcceptorBoundaries(variant, STD_ACC_INTRONIC_LENGTH, STD_ACC_EXONIC_LENGTH)
     elif donor == False and deNovo == True:
@@ -597,10 +604,12 @@ def varInSpliceRegion(variant, donor=False, deNovo=False):
     varGenPos = int(variant["Pos"])
     varGenEnd = int(variant["Hg38_End"])
     varStrand = getVarStrand(variant)
-    if getVarType(variant) == "deletion" or getVarType(variant) == "delins":
+    varType = getVarType(variant)
+    variantCopy = variant.copy()
+    if varType == "deletion" or varType == "delins":
         # +1 due to RefSeq numbering and position
-        # currently not working with 1 bp deletions, need to fix
-        varGenPos = varGenPos + 1
+        variantCopy["Pos"] = varGenPos + 1
+        varGenPos = variantCopy["Pos"]
     for exon in regionBounds.keys():
         if donor == False:
             regionStart = regionBounds[exon]["acceptorStart"]
@@ -608,14 +617,14 @@ def varInSpliceRegion(variant, donor=False, deNovo=False):
         else:
             regionStart = regionBounds[exon]["donorStart"]
             regionEnd = regionBounds[exon]["donorEnd"]
-        for genPos in xrange(varGenPos, varGenEnd + 1):     
+        for genPos in xrange(varGenPos, varGenEnd + 1):
             withinBoundaries = checkWithinBoundaries(varStrand, genPos, regionStart, regionEnd)
             if withinBoundaries == True and donor == False:
                 return True
             elif donor == True and deNovo == False and withinBoundaries == True:
                 return True
             # because de novo donor region includes reference splice donor region and entirity of exon
-            elif donor == True and deNovo == True and (withinBoundaries == True or varInExon(variant) == True):
+            elif donor == True and deNovo == True and (withinBoundaries == True or varInExon(variantCopy) == True):
                 return True
     return False
 
@@ -647,7 +656,7 @@ def getVarSpliceRegionBounds(variant, donor=False, deNovo=False):
             if withinBoundaries == True:
                 return {"exonName": exon,
                         regionStartKey: regionStart,
-                        regionEndKey: regionEnd}    
+                        regionEndKey: regionEnd}
                 
 def varInCIDomain(variant, boundaries):
     '''
@@ -656,24 +665,35 @@ def varInCIDomain(variant, boundaries):
     Returns True if variant in CI domain
     '''
     varGenPos = int(variant["Pos"])
+    varGenEnd = int(variant["Hg38_End"])
     varGene = variant["Gene_Symbol"]
     varStrand = getVarStrand(variant)
+    varType = getVarType(variant)
     inExon = varInExon(variant)
     if inExon == True:
+        if varType == "deletion" or varType == "delins":
+            if varStrand == "-":
+                # because RefSeq numbering decreases from left to right for minus strand
+                varGenEnd = varGenEnd - 1
+            else:
+                # because RefSeq numbering increases from left to right for plus strand
+                varGenPos = varGenPos + 1
         if varGene == "BRCA1":
             for domain in brca1CIDomains[boundaries].keys():
                 domainStart = brca1CIDomains[boundaries][domain]["domStart"]
                 domainEnd = brca1CIDomains[boundaries][domain]["domEnd"]
-                withinBoundaries = checkWithinBoundaries(varStrand, varGenPos, domainStart, domainEnd)
-                if withinBoundaries == True:
-                    return True
+                for genPos in xrange(varGenPos, varGenEnd + 1):
+                    withinBoundaries = checkWithinBoundaries(varStrand, genPos, domainStart, domainEnd)
+                    if withinBoundaries == True:
+                        return True
         elif varGene == "BRCA2":
             for domain in brca2CIDomains[boundaries].keys():
                 domainStart = brca2CIDomains[boundaries][domain]["domStart"]
                 domainEnd = brca2CIDomains[boundaries][domain]["domEnd"]
-                withinBoundaries = checkWithinBoundaries(varStrand, varGenPos, domainStart, domainEnd)
-                if withinBoundaries == True:
-                    return True
+                for genPos in xrange(varGenPos, varGenEnd + 1):
+                    withinBoundaries = checkWithinBoundaries(varStrand, genPos, domainStart, domainEnd)
+                    if withinBoundaries == True:
+                        return True
     return False
                 
 def varInGreyZone(variant):
@@ -711,6 +731,45 @@ def varAfterGreyZone(variant):
             if varGenPos > greyZoneEnd:
                 return True
     return False
+
+def varInIntronStructuralVars(variant):
+    # TO DO write unittests
+    '''
+    Given a variant, checks that variant is a structural variant (deletion, insertion, delins)
+    Then determines if variant is entirely or partially in an intron
+    Returns True if variant is partially or entirely in an intron
+    Returns False otherwise
+    '''
+    varType = getVarType(variant)
+    if varType != "substitution":
+        if varOutsideBoundaries(variant) == False:
+            varGenPos = int(variant["Pos"])
+            varGenEnd = int(variant["Hg38_End"])
+            varExons = getExonBoundaries(variant)
+            varStrand = getVarStrand(variant)
+            if varType == "deletion" or varType == "delins":
+                if varStrand == "-":
+                    # because RefSeq numbering decreases from left to right for minus strand
+                    varGenEnd = varGenEnd - 1
+                else:
+                    # because RefSeq numbering increases from left to right for plus strand
+                    varGenPos = varGenPos + 1
+            for exon in varExons.keys():
+                # exon is in format "exonN"
+                # nextExon parses out N from exon and adds 1 to get next exon number key "exonN+1"
+                # use [4:] to remove "exon" from "exonN" so can add 1 to N to get N+1
+                nextExon = "exon" + str(int(varExonNum[4:]) + 1)
+                regionStart = int(varExons[exon]["exonEnd"])
+                regionEnd = int(varExons[nextExon]["exonStart"])
+                for genPos in xrange(varGenPos, varGenEnd + 1):     
+                    if varStrand == "+":
+                        if genPos > regionStart and genPos <= regionEnd:
+                            return True
+                    else:
+                        withinBoundaries = checkWithinBoundaries(varStrand, genPos, regionStart, regionEnd)
+                        if withinBoundaries == True:
+                            return True
+            return False
                 
 def getVarLocation(variant, boundaries):
     '''
