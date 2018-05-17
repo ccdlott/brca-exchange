@@ -667,13 +667,8 @@ def varInCIDomain(variant, boundaries):
     varType = getVarType(variant)
     inExon = varInExon(variant)
     if inExon == True:
-        if varType == "deletion" or varType == "delins":
-            if varStrand == "-":
-                # because RefSeq numbering decreases from left to right for minus strand
-                varGenEnd = varGenEnd - 1
-            else:
-                # because RefSeq numbering increases from left to right for plus strand
-                varGenPos = varGenPos + 1
+        if varType == "deletion":
+            varGenPos = varGenPos + 1
         if varGene == "BRCA1":
             for domain in brca1CIDomains[boundaries].keys():
                 domainStart = brca1CIDomains[boundaries][domain]["domStart"]
@@ -813,8 +808,13 @@ def getVarLocationSNS(variant, boundaries):
             return "intron_variant"
 
 def getVarLocationStructuralVar(variant, boundaries):
-    # TO DO write unittests and function description
-    # TO DO need to write unittests for UTR/intron
+    '''
+    Given a variant and boundaries (either "priors" or "enigma"):
+     1. Checks that variant is a structural variant
+     2. Determines variant location(s)
+    Returns a string of variant location(s)
+    If multiple location tags, they are separated with /
+    '''
     if getVarType(variant) != "substitution":
         varLoc = []
         varOutBounds = varOutsideBoundaries(variant)
@@ -3462,8 +3462,11 @@ def getVarData(variant, boundaries, variantData, genome, transcript):
     Determines prior prob dictionary based on variant location
     Return dictionary containing all values for all new prior prob fields
     '''
-    varLoc = getVarLocationSNS(variant, boundaries)
     varType = getVarType(variant)
+    if varType == "substitution":
+        varLoc = getVarLocationSNS(variant, boundaries)
+    else:
+        varLoc = getVarLocationStructuralVar(variant, boundaries)
     blankDict = {"applicablePrior": "-",
                  "applicableEnigmaClass": "-",
                  "proteinPrior": "-",

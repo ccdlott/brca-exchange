@@ -3271,147 +3271,6 @@ class test_calcVarPriors(unittest.TestCase):
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
     @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
     @mock.patch('calcVarPriors.varInExon', return_value = True)
-    @mock.patch('calcVarPriors.varInCIDomain', side_effect = [True, False, False, False])
-    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
-    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
-    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [False, True, False, False,
-                                                                  False, False, False, True])
-    @mock.patch('calcVarPriors.varInUTR', return_value = False)
-    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [False, False, False, True])
-    def test_getVarLocationStructuralVarInExonDeletion(self, getVarType, varOutsideBoundaries, varInExon,
-                                                       varInCIDomain, varInGreyZone, varAfterGreyZone,
-                                                       varInSpliceRegion, varInUTR, varInIntronStructuralVars):
-        boundaries = "enigma"
-
-        self.variant["Gene_Symbol"] = "BRCA2"
-        self.variant["Reference_Sequence"] = "NM_000059.3"
-
-        # checks function for deletion variant that spans multiple locations
-        self.variant["HGVS_cDNA"] = "c.8488_8489delTG"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "32370955"
-        self.variant["Hg38_End"] = "32370957"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "CI_domain/splice_acceptor/exon")
-        
-        # checks function for deletion variant just in exon
-        self.variant["HGVS_cDNA"] = "c.36delT"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "32316495"
-        self.variant["Hg38_End"] = "32316496"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "exon")
-
-        self.variant["Gene_Symbol"] = "BRCA1"
-        self.variant["Reference_Sequence"] = "NM_007294.3"
-
-        # checks function for deletion variant just in exon
-        self.variant["HGVS_cDNA"] = "c.1327_1345delAAAAGTGAAAGAGTTCACT"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "43094185"
-        self.variant["Hg38_End"] = "43094204"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "exon")
-
-        # checks function for deletion variant that spans multiple locations
-        self.variant["HGVS_cDNA"] = "c.442-43_524del"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "43099797"
-        self.variant["Hg38_End"] = "43099923"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "splice_acceptor/exon/intron")
-
-    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
-    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
-    @mock.patch('calcVarPriors.varInExon', return_value = True)
-    @mock.patch('calcVarPriors.varInCIDomain', side_effect = [True, False, False, False])
-    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
-    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
-    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [True, False, False, False,
-                                                                  False, False, True, False])
-    @mock.patch('calcVarPriors.varInUTR', return_value = False)
-    @mock.patch('calcVarPriors.varInIntronStructuralVars', return_value = False)
-    def test_getVarLocationStructuralVarInExonInsertion(self, getVarType, varOutsideBoundaries, varInExon,
-                                                        varInCIDomain, varInGreyZone, varAfterGreyZone,
-                                                        varInSpliceRegion, varInUTR, varInIntronStructuralVars):
-        boundaries = "enigma"
-        self.variant["Gene_Symbol"] = "BRCA1"
-        self.variant["Reference_Sequence"] = "NM_007294.3"
-
-        # checks function for insertion variant that has multiple location tags
-        self.variant["HGVS_cDNA"] = "c.78_79insCATCTG"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43124018"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "CI_domain/splice_donor/exon")
-        
-        # checks function for insertion variant just in exon
-        self.variant["HGVS_cDNA"] = "c.4838_4839insC"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43071075"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "exon")
-
-        self.variant["Gene_Symbol"] = "BRCA2"
-        self.variant["Reference_Sequence"] = "NM_000059.3"
-
-        # checks function for insertion variant just in exon
-        self.variant["HGVS_cDNA"] = "c.4540_4541insCGAT"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32338895"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "exon")
-
-        # checks function for insertion variant that has multiple location tags
-        self.variant["HGVS_cDNA"] = "c.6839_6840insA"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32341194"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "splice_donor/exon")
-
-    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
-    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
-    @mock.patch('calcVarPriors.varInExon', return_value = True)
-    @mock.patch('calcVarPriors.varInCIDomain', side_effect =[True, False, False, False])
-    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
-    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
-    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [True, False, False, False,
-                                                                  False, False, True, False])
-    @mock.patch('calcVarPriors.varInUTR', return_value = False)
-    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [False, False, False, True])
-    def test_getVarLocationStructuralVarInExonDelins(self, getVarType, varOutsideBoundaries, varInExon,
-                                                     varInCIDomain, varInGreyZone, varAfterGreyZone,
-                                                     varInSpliceRegion, varInUTR, varInIntronStructuralVars):
-        boundaries = "enigma"
-        self.variant["Gene_Symbol"] = "BRCA1"
-        self.variant["Reference_Sequence"] = "NM_007294.3"
-
-        # checks function for delins variant that spans multiple locations
-        self.variant["HGVS_cDNA"] = "c.5331_5332+6delinsCAACAT"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "43051057"
-        self.variant["Hg38_End"] = "43051064"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "CI_domain/splice_donor/exon")
-        
-        # checks function for delins variant just in exon
-        self.variant["HGVS_cDNA"] = "c.4391_4393delCTAinsTT"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "43076579"
-        self.variant["Hg38_End"] = "43076581"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "exon")
-
-        self.variant["Gene_Symbol"] = "BRCA2"
-        self.variant["Reference_Sequence"] = "NM_000059.3"
-
-        # checks function for delins variant just in exon
-        self.variant["HGVS_cDNA"] = "c.765_770delCACAAAinsAAACAAT"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "32331002"
-        self.variant["Hg38_End"] = "32331007"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "exon")
-
-        # checks function for delins variant that spans multiple locations
-        self.variant["HGVS_cDNA"] = "c.276_317-722delinsCCAT"
-        self.variant["Pos"] = self.variant["Hg38_Start"] = "32319285"
-        self.variant["Hg38_End"] = "32324354"
-        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
-        self.assertEquals(varLoc, "splice_donor/exon/intron")
-        
-    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
-    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
-    @mock.patch('calcVarPriors.varInExon', return_value = True)
     @mock.patch('calcVarPriors.varInCIDomain', return_value = False)
     @mock.patch('calcVarPriors.varInGreyZone', return_value = True)
     @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
@@ -3544,6 +3403,434 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["Hg38_End"] = "32398601"
         varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
         self.assertEquals(varLoc, "after_grey_zone")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.varInCIDomain', side_effect = [True, False, False, False])
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [False, True, False, False,
+                                                                  False, False, False, True])
+    @mock.patch('calcVarPriors.varInUTR', return_value = False)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [False, False, False, True])
+    def test_getVarLocationStructuralVarInExonDeletion(self, getVarType, varOutsideBoundaries, varInExon,
+                                                       varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                       varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that deletion variants partially or entirely in exon are correctly identified as in an exon'''
+        boundaries = "enigma"
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for deletion variant that spans multiple locations
+        self.variant["HGVS_cDNA"] = "c.8488_8489delTG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32370955"
+        self.variant["Hg38_End"] = "32370957"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "CI_domain/splice_acceptor/exon")
+        
+        # checks function for deletion variant just in exon
+        self.variant["HGVS_cDNA"] = "c.36delT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32316495"
+        self.variant["Hg38_End"] = "32316496"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon")
+
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for deletion variant just in exon
+        self.variant["HGVS_cDNA"] = "c.1327_1345delAAAAGTGAAAGAGTTCACT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43094185"
+        self.variant["Hg38_End"] = "43094204"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon")
+
+        # checks function for deletion variant that spans multiple locations
+        self.variant["HGVS_cDNA"] = "c.442-43_524del"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43099797"
+        self.variant["Hg38_End"] = "43099923"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_acceptor/exon/intron")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.varInCIDomain', side_effect = [True, False, False, False])
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [True, False, False, False,
+                                                                  False, False, True, False])
+    @mock.patch('calcVarPriors.varInUTR', return_value = False)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', return_value = False)
+    def test_getVarLocationStructuralVarInExonInsertion(self, getVarType, varOutsideBoundaries, varInExon,
+                                                        varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                        varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that insertion variants partially or entirely in exon are correctly identified as in an exon'''
+        boundaries = "enigma"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for insertion variant that has multiple location tags
+        self.variant["HGVS_cDNA"] = "c.78_79insCATCTG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43124018"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "CI_domain/splice_donor/exon")
+        
+        # checks function for insertion variant just in exon
+        self.variant["HGVS_cDNA"] = "c.4838_4839insC"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43071075"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for insertion variant just in exon
+        self.variant["HGVS_cDNA"] = "c.4540_4541insCGAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32338895"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon")
+
+        # checks function for insertion variant that has multiple location tags
+        self.variant["HGVS_cDNA"] = "c.6839_6840insA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32341194"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_donor/exon")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', return_value = True)
+    @mock.patch('calcVarPriors.varInCIDomain', side_effect =[True, False, False, False])
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [True, False, False, False,
+                                                                  False, False, True, False])
+    @mock.patch('calcVarPriors.varInUTR', return_value = False)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [False, False, False, True])
+    def test_getVarLocationStructuralVarInExonDelins(self, getVarType, varOutsideBoundaries, varInExon,
+                                                     varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                     varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that delins variants partially or entirely in exon are correctly identified as in an exon'''
+        boundaries = "enigma"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for delins variant that spans multiple locations
+        self.variant["HGVS_cDNA"] = "c.5331_5332+6delinsCAACAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43051057"
+        self.variant["Hg38_End"] = "43051064"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "CI_domain/splice_donor/exon")
+        
+        # checks function for delins variant just in exon
+        self.variant["HGVS_cDNA"] = "c.4391_4393delCTAinsTT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43076579"
+        self.variant["Hg38_End"] = "43076581"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for delins variant just in exon
+        self.variant["HGVS_cDNA"] = "c.765_770delCACAAAinsAAACAAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32331002"
+        self.variant["Hg38_End"] = "32331007"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon")
+
+        # checks function for delins variant that spans multiple locations
+        self.variant["HGVS_cDNA"] = "c.276_317-722delinsCCAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32319285"
+        self.variant["Hg38_End"] = "32324354"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_donor/exon/intron")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', side_effect = [False, True, True, True])
+    @mock.patch('calcVarPriors.varInCIDomain', return_value = False)
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', return_value = False)
+    @mock.patch('calcVarPriors.varInUTR', return_value = True)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [True, False, False, False])
+    def test_getVarLocationStructuralVarInUTRDeletion(self, getVarType, varOutsideBoundaries, varInExon,
+                                                      varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                      varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that deletion variants partially or entirely in UTRs are correctly identified as in UTRs'''
+        boundaries = "enigma"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for deletion variant in 5' UTR
+        self.variant["HGVS_cDNA"] = "c.-19-58_-19-56del"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43124170"
+        self.variant["Hg38_End"] = "43124173"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "UTR/intron")
+
+        # checks function for deletion variant in 3' UTR
+        self.variant["HGVS_cDNA"] = "c.5574_*2del"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43045675"
+        self.variant["Hg38_End"] = "43045696"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon/UTR")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for deletion variant in 5' UTR
+        self.variant["HGVS_cDNA"] = "c.-7_9del16"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32316453"
+        self.variant["Hg38_End"] = "32316469"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon/UTR")
+
+        # checks function for deletion variant in 3' UTR
+        self.variant["HGVS_cDNA"] = "c.*839delT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32399608"
+        self.variant["Hg38_End"] = "32399609"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon/UTR")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', side_effect = [False, True, False, True])
+    @mock.patch('calcVarPriors.varInCIDomain', return_value = False)
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', return_value = False)
+    @mock.patch('calcVarPriors.varInUTR', return_value = True)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [True, False, True, False])
+    def test_getVarLocationStructuralVarInUTRInsertion(self, getVarType, varOutsideBoundaries, varInExon,
+                                                       varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                       varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that insertion variants partially or entirely in UTRs are correctly identified as in UTRs'''
+        boundaries = "enigma"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for insertion variant in 5' UTR
+        self.variant["HGVS_cDNA"] = "c.-19-55_-19-54insT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43124169"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "UTR/intron")
+
+        # checks function for insertion variant in 3' UTR
+        self.variant["pyhgvs_cDNA"] = "NM_007294.3:c.*1287dupC"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43044390"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon/UTR")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for insertion variant in 5' UTR
+        # this variant does not exist in database as of 5/17/18
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32315648"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "UTR/intron")
+
+        # checks function for insertion variant in 3' UTR
+        self.variant["HGVS_cDNA"] = "c.*360dupC"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32399130"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon/UTR")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', side_effect = [False, True, False, True])
+    @mock.patch('calcVarPriors.varInCIDomain', return_value = False)
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [False, True, False, False,
+                                                                  False, False, False, False])
+    @mock.patch('calcVarPriors.varInUTR', return_value = True)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [True, False, True, False])
+    def test_getVarLocationStructuralVarInUTRDelins(self, getVarType, varOutsideBoundaries, varInExon,
+                                                    varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                    varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that delins variants partially or entirely in UTRs are correctly identified as in UTRs'''
+        boundaries = "enigma"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for delins variant in 5' UTR
+        self.variant["HGVS_cDNA"] = "c.-19-17_-19-13delTTTCTinsAA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43124128"
+        self.variant["Hg38_End"] = "43124132"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_acceptor/UTR/intron")
+
+        # checks function for delins variant in 3' UTR
+        # this variant does not exist in database as of 5/17/18
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43044826"
+        self.variant["Hg38_End"] = "43044828"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon/UTR")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for delins variant in 5' UTR
+        self.variant["HGVS_cDNA"] = "c.-26_-25delGCinsAG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32316435"
+        self.variant["Hg38_End"] = "32316436"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "UTR/intron")
+
+        # checks function for delins variant in 3' UTR
+        # this variant does not exist in database as of 5/17/18
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32398787"
+        self.variant["Hg38_End"] = "32398790"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "exon/UTR")
+        
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', side_effect = [True, False, False, True])
+    @mock.patch('calcVarPriors.varInCIDomain', side_effect = [True, False, False, False])
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [True, True, False, False,
+                                                                  False, False, False, True])
+    @mock.patch('calcVarPriors.varInUTR', return_value = False)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [True, True, True, True])
+    def test_getVarLocationStructuralVarInIntronDeletion(self, getVarType, varOutsideBoundaries, varInExon,
+                                                         varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                         varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that deletion variants partially or entirely in introns are correctly identified as in a intron'''
+        boundaries = "engima"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for deletion variant partially in intron
+        self.variant["HGVS_cDNA"] = "c.5406+664_5468-162del"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43045963"
+        self.variant["Hg38_End"] = "43048457"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "CI_domain/splice_donor/splice_acceptor/exon/intron")
+        
+        # checks function for deletion variant entirely in intron
+        self.variant["HGVS_cDNA"] = "c.442-680_442-679del"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43100558"
+        self.variant["Hg38_End"] = "43100560"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "intron")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for deletion variant entirely in intron
+        self.variant["HGVS_cDNA"] = "c.516+14delC"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32326295"
+        self.variant["Hg38_End"] = "32326296"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "intron")
+
+        # checks function for deletion variant partially in intron
+        self.variant["HGVS_cDNA"] = "c.7436-2_7437delAGAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32356425"
+        self.variant["Hg38_End"] = "32356429"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_acceptor/exon/intron")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', return_value = False)
+    @mock.patch('calcVarPriors.varInCIDomain', return_value = False)
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [False, False, True, False,
+                                                                  False, False, False, True])
+    @mock.patch('calcVarPriors.varInUTR', return_value = False)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [True, True, True, True])
+    def test_getVarLocationStructuralVarInIntronInsertion(self, getVarType, varOutsideBoundaries, varInExon,
+                                                          varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                          varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that insertion variants partially or entirely in introns are correctly identified as in a intron'''
+        boundaries = "engima"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+
+        # checks function for insertion variant entirely in intron
+        self.variant["HGVS_cDNA"] = "c.442-810_442-809insACA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43100689"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "intron")
+
+        # checks function for insertion variant partially in intron
+        self.variant["HGVS_cDNA"] = "c.301+2dupT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43104866"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_donor/intron")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for insertion variant entirely in intron
+        self.variant["HGVS_cDNA"] = "c.681+20_681+21insA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32329511"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "intron")
+
+        # checks function for insertion variant partially in intron
+        self.variant["HGVS_cDNA"] = "c.794-5_794-4insT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32332267"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_acceptor/intron")
+
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.varOutsideBoundaries', return_value = False)
+    @mock.patch('calcVarPriors.varInExon', side_effect = [True, False, False, False])
+    @mock.patch('calcVarPriors.varInCIDomain', side_effect = [True, False, False, False])
+    @mock.patch('calcVarPriors.varInGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varAfterGreyZone', return_value = False)
+    @mock.patch('calcVarPriors.varInSpliceRegion', side_effect = [True, True, False, False,
+                                                                  False, False, False, True])
+    @mock.patch('calcVarPriors.varInUTR', return_value = False)
+    @mock.patch('calcVarPriors.varInIntronStructuralVars', side_effect = [True, True, True, True])
+    def test_getVarLocationStructuralVarInIntronDelins(self, getVarType, varOutsideBoundaries, varInExon,
+                                                       varInCIDomain, varInGreyZone, varAfterGreyZone,
+                                                       varInSpliceRegion, varInUTR, varInIntronStructuralVars):
+        '''Tests that delins variants partially or entirely in introns are correctly identified as in a intron'''
+        boundaries = "engima"
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["Reference_Sequence"] = "NM_007294.3"
+        
+        # checks function for delins variant partially in intron
+        self.variant["HGVS_cDNA"] = "c.5152+149_5193+2200delinsTTTTTTTTTTTT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43061133"
+        self.variant["Hg38_End"] = "43063725"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "CI_domain/splice_donor/splice_acceptor/exon/intron")
+        
+        # checks function for delins variant entirely in intron
+        self.variant["HGVS_cDNA"] = "c.4987-94_4987-92delinsGCG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43067787"
+        self.variant["Hg38_End"] = "43067789"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "intron")
+
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["Reference_Sequence"] = "NM_000059.3"
+
+        # checks function for delins variant entirely in intron
+        self.variant["HGVS_cDNA"] = "c.8632+12_8632+19delinsATATAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32371112"
+        self.variant["Hg38_End"] = "32371118"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "intron")
+
+        # checks function for delins variant partially in intron
+        self.variant["HGVS_cDNA"] = "c.9118-9_9118-8delTTinsCA"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32379998"
+        self.variant["Hg38_End"] = "32379999"
+        varLoc = calcVarPriors.getVarLocationStructuralVar(self.variant, boundaries)
+        self.assertEquals(varLoc, "splice_acceptor/intron")
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = brca1Seq)    
     def test_getSeqLocDictBRCA1(self, getFastaSeq):
@@ -10539,7 +10826,7 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["Gene_Symbol"] = "BRCA2"
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["HGVS_cDNA"] = "c.4965C>R"
-        self.variant["Pos"] = "32339320"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32339320"
         self.variant["Ref"] = "C"
         self.variant["Alt"] = "R"
         priorProb = calcVarPriors.getVarData(self.variant, boundaries, variantData, GENOME, BRCA1_RefSeq)
@@ -10552,7 +10839,7 @@ class test_calcVarPriors(unittest.TestCase):
         self.variant["Gene_Symbol"] = "BRCA2"
         self.variant["Reference_Sequence"] = "NM_000059.3"
         self.variant["HGVS_cDNA"] = "c.4965delCinsGA"
-        self.variant["Pos"] = "32339320"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32339320"
         self.variant["Ref"] = "C"
         self.variant["Alt"] = "GA"
         priorProb = calcVarPriors.getVarData(self.variant, boundaries, variantData, GENOME, BRCA2_RefSeq)
