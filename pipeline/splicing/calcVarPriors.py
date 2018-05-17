@@ -521,22 +521,18 @@ def varInExon(variant):
         varExons = getExonBoundaries(variant)
         varStrand = getVarStrand(variant)
         varType = getVarType(variant)
-        if varType == "deletion" or varType == "delins":
-            if varStrand == "-":
-                # because RefSeq numbering decreases from left to right for minus strand
-                varGenEnd = varGenEnd - 1
-            else:
-                # because RefSeq numbering increases from left to right for plus strand
-                varGenPos = varGenPos + 1
+        if varType == "deletion":
+            varGenPos = varGenPos + 1
         for exon in varExons.keys():
             exonStart = int(varExons[exon]["exonStart"])
             exonEnd = int(varExons[exon]["exonEnd"])
-            if varStrand == "+":
-                if varGenPos > exonStart and varGenPos <= exonEnd:
-                    return True
-            else:
-                if varGenPos <= exonStart and varGenPos > exonEnd:
-                    return True
+            for genPos in xrange(varGenPos, varGenEnd + 1):     
+                if varStrand == "+":
+                    if genPos > exonStart and genPos <= exonEnd:
+                        return True
+                else:
+                    if genPos <= exonStart and genPos > exonEnd:
+                        return True
     return False
 
 def getVarExonNumberSNS(variant):
@@ -733,7 +729,6 @@ def varAfterGreyZone(variant):
     return False
 
 def varInIntronStructuralVars(variant):
-    # TO DO write unittests
     '''
     Given a variant, checks that variant is a structural variant (deletion, insertion, delins)
     Then determines if variant is entirely or partially in an intron
@@ -747,21 +742,23 @@ def varInIntronStructuralVars(variant):
             varGenEnd = int(variant["Hg38_End"])
             varExons = getExonBoundaries(variant)
             varStrand = getVarStrand(variant)
-            if varType == "deletion" or varType == "delins":
-                if varStrand == "-":
-                    # because RefSeq numbering decreases from left to right for minus strand
-                    varGenEnd = varGenEnd - 1
-                else:
-                    # because RefSeq numbering increases from left to right for plus strand
-                    varGenPos = varGenPos + 1
+            varGene = variant["Gene_Symbol"]
+            if varType == "deletion":
+                varGenPos = varGenPos + 1
             for exon in varExons.keys():
                 # exon is in format "exonN"
                 # nextExon parses out N from exon and adds 1 to get next exon number key "exonN+1"
                 # use [4:] to remove "exon" from "exonN" so can add 1 to N to get N+1
-                nextExon = "exon" + str(int(varExonNum[4:]) + 1)
+                nextExon = "exon" + str(int(exon[4:]) + 1)
+                # to handle "missing" exon4 in BRCA1 because exon4 does not exist in BRCA1 RefSeq
+                if varGene == "BRCA1" and nextExon == "exon4":
+                    nextExon = "exon5"
+                # because there is no intron after last exon in gene
+                if (varGene == "BRCA1" and exon == "exon24") or (varGene == "BRCA2" and exon == "exon27"):
+                    continue
                 regionStart = int(varExons[exon]["exonEnd"])
                 regionEnd = int(varExons[nextExon]["exonStart"])
-                for genPos in xrange(varGenPos, varGenEnd + 1):     
+                for genPos in xrange(varGenPos, varGenEnd + 1):
                     if varStrand == "+":
                         if genPos > regionStart and genPos <= regionEnd:
                             return True
@@ -770,49 +767,88 @@ def varInIntronStructuralVars(variant):
                         if withinBoundaries == True:
                             return True
             return False
-                
-def getVarLocation(variant, boundaries):
+        
+def getVarLocationSNS(variant, boundaries):
     '''
     Given a variant, returns the variant location as below
     Second argument is for CI domain boundaries (PRIORS or ENIGMA)
     '''
-    varOutBounds = varOutsideBoundaries(variant)
-    if varOutBounds == True:
-        return "outside_transcript_boundaries_variant"
-    inExon = varInExon(variant)
-    inSpliceDonor = varInSpliceRegion(variant, donor=True, deNovo=False)
-    inSpliceAcceptor = varInSpliceRegion(variant, donor=False, deNovo=False)
-    if inExon == True:
-        inCIDomain = varInCIDomain(variant, boundaries)
-        if inCIDomain == True and inSpliceDonor == True:
-            return "CI_splice_donor_variant"
-        if inCIDomain == True and inSpliceAcceptor == True:
-            return "CI_splice_acceptor_variant"
-        if inCIDomain == True:
-            return "CI_domain_variant"
-        if inSpliceDonor == True:
-            return "splice_donor_variant"
-        if inSpliceAcceptor == True:
-            return "splice_acceptor_variant"
-        inGreyZone = varInGreyZone(variant)
-        if inGreyZone == True:
-            return "grey_zone_variant"
-        afterGreyZone = varAfterGreyZone(variant)
-        if afterGreyZone == True:
-            return "after_grey_zone_variant"
-        inUTR = varInUTR(variant)
-        if inUTR == True:
-            return "UTR_variant"
-        return "exon_variant"
-    else:    
-        if inSpliceDonor == True:
-            return "splice_donor_variant"
-        if inSpliceAcceptor == True:
-            return "splice_acceptor_variant"
-        inUTR = varInUTR(variant)
-        if inUTR == True:
-            return "UTR_variant"
-        return "intron_variant"
+    if getVarType(variant) == "substitution":
+        varOutBounds = varOutsideBoundaries(variant)
+        if varOutBounds == True:
+            return "outside_transcript_boundaries_variant"
+        inExon = varInExon(variant)
+        inSpliceDonor = varInSpliceRegion(variant, donor=True, deNovo=False)
+        inSpliceAcceptor = varInSpliceRegion(variant, donor=False, deNovo=False)
+        if inExon == True:
+            inCIDomain = varInCIDomain(variant, boundaries)
+            if inCIDomain == True and inSpliceDonor == True:
+                return "CI_splice_donor_variant"
+            if inCIDomain == True and inSpliceAcceptor == True:
+                return "CI_splice_acceptor_variant"
+            if inCIDomain == True:
+                return "CI_domain_variant"
+            if inSpliceDonor == True:
+                return "splice_donor_variant"
+            if inSpliceAcceptor == True:
+                return "splice_acceptor_variant"
+            inGreyZone = varInGreyZone(variant)
+            if inGreyZone == True:
+                return "grey_zone_variant"
+            afterGreyZone = varAfterGreyZone(variant)
+            if afterGreyZone == True:
+                return "after_grey_zone_variant"
+            inUTR = varInUTR(variant)
+            if inUTR == True:
+               return "UTR_variant"
+            return "exon_variant"
+        else:    
+            if inSpliceDonor == True:
+                return "splice_donor_variant"
+            if inSpliceAcceptor == True:
+                return "splice_acceptor_variant"
+            inUTR = varInUTR(variant)
+            if inUTR == True:
+                return "UTR_variant"
+            return "intron_variant"
+
+def getVarLocationStructuralVar(variant, boundaries):
+    # TO DO write unittests and function description
+    # TO DO need to write unittests for UTR/intron
+    if getVarType(variant) != "substitution":
+        varLoc = []
+        varOutBounds = varOutsideBoundaries(variant)
+        if varOutBounds == True:
+            varLoc.append("outside_transcript_boundaries")
+        inExon = varInExon(variant)
+        if inExon == True:
+            inCIDomain = varInCIDomain(variant, boundaries)
+            if inCIDomain == True:
+                varLoc.append("CI_domain")
+            inGreyZone = varInGreyZone(variant)
+            if inGreyZone == True:
+                varLoc.append("grey_zone")
+            afterGreyZone = varAfterGreyZone(variant)
+            if afterGreyZone == True:
+                varLoc.append("after_grey_zone")
+        if varInSpliceRegion(variant, donor=True, deNovo=False) == True:
+            varLoc.append("splice_donor")
+        if varInSpliceRegion(variant, donor=False, deNovo=False) == True:
+            varLoc.append("splice_acceptor")
+        if inExon == True and inGreyZone == False and afterGreyZone == False:
+            varLoc.append("exon")
+        if varInUTR(variant) == True:
+            varLoc.append("UTR")
+        if varInIntronStructuralVars(variant) == True:
+            varLoc.append("intron")
+        if len(varLoc) == 1:
+            return varLoc[0]
+        else:
+            varLocs = ""
+            for location in varLoc:
+                varLocs = varLocs + location + "/"
+            # varLocs[:-1] to remove last / in string
+            return varLocs[:-1]
 
 def getFastaSeq(chrom, rangeStart, rangeStop, plusStrandSeq=True):
     '''
@@ -1146,8 +1182,8 @@ def getClosestExonNumberIntronicSNS(variant, boundaries, donor=True):
     Returns the closest exon end in the format "exonN"
     If variant is not in an intron or UTR, returns "exon0"
     '''
-    varLoc = getVarLocation(variant, boundaries)
-    if (varLoc == "intron_variant" or varLoc == "UTR_variant") and getVarType(variant) == "substitution" and varInExon(variant) == False:
+    varLoc = getVarLocationSNS(variant, boundaries)
+    if (varLoc == "intron_variant" or varLoc == "UTR_variant")  and getVarType(variant) == "substitution" and varInExon(variant) == False:
         exonBounds = getExonBoundaries(variant)
         varGenPos = variant["Pos"]
         exonIntronDiffs = {}
@@ -1193,7 +1229,7 @@ def getClosestSpliceSiteScores(variant, deNovoOffset, donor=True, deNovo=False, 
     '''
     varGenPos = int(variant["Pos"])
     varChrom = getVarChrom(variant)
-    varLoc = getVarLocation(variant, "enigma")
+    varLoc = getVarLocationSNS(variant, "enigma")
     if (varInExon(variant) == True and deNovo == False) or (varLoc == "intron_variant" or varLoc == "UTR_variant"):
         if varInExon(variant) == True:
             exonNumber = getVarExonNumberSNS(variant)
@@ -1723,7 +1759,7 @@ def getPriorProbRefSpliceDonorSNS(variant, boundaries):
      also has spliceSite variable = 1, so variant is marked as in a reference splice site
     '''
     varType = getVarType(variant)
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     if varType == "substitution" and (varLoc == "splice_donor_variant" or varLoc == "CI_splice_donor_variant"):
         # to get region boundaries to get ref and alt seq
         spliceDonorBounds = getVarSpliceRegionBounds(variant, donor=True, deNovo=False)
@@ -1787,7 +1823,7 @@ def getPriorProbRefSpliceAcceptorSNS(variant, boundaries):
      also has spliceSite variable = 1, so variant is marked as in a reference splice site
     '''
     varType = getVarType(variant)
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     if varType == "substitution" and (varLoc == "splice_acceptor_variant" or varLoc == "CI_splice_acceptor_variant"):
         # to get region boundaires to get ref and alt seq
         spliceAcceptorBounds = getVarSpliceRegionBounds(variant, donor=False, deNovo=False)
@@ -1846,7 +1882,7 @@ def getPriorProbAfterGreyZoneSNS(variant, boundaries):
     Dictionary contains other values that are set to either N/A, "-", or 0 because they are not relevant
     '''
     varType = getVarType(variant)
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     if varType == "substitution" and varLoc == "after_grey_zone_variant":
         varCons = getVarConsequences(variant)
         if varCons == "stop_gained" or varCons == "missense_variant" or varCons == "synonymous_variant":
@@ -2662,7 +2698,7 @@ def getPriorProbInGreyZoneSNS(variant, boundaries, variantData):
     Returns applicable prior and enigma class based on protein priors for that variant
     Dictionary also contains other values that are either "N/A", "-", or 0 because they are not relevant
     '''
-    if getVarType(variant) == "substitution" and getVarLocation(variant, boundaries) == "grey_zone_variant":
+    if getVarType(variant) == "substitution" and getVarLocationSNS(variant, boundaries) == "grey_zone_variant":
         proteinData = getPriorProbProteinSNS(variant, variantData)
         proteinPrior = proteinData["priorProb"]
         if proteinPrior == PATHOGENIC_PROBABILITY:
@@ -2786,7 +2822,7 @@ def getPriorProbInExonSNS(variant, boundaries, variantData, genome, transcript):
         isDivisibleFlag = 1 if distance between de novo donor and wild-type donor splice site is NOT divisible by 3 for nonsense variant, 
            0 if it IS divisible, N/A if not a nonsense variant
     '''
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     if (varLoc == "exon_variant" or "CI_domain_variant") and getVarType(variant) == "substitution":
         proteinData = getPriorProbProteinSNS(variant, variantData)
         spliceRescue = "N/A"
@@ -2942,7 +2978,7 @@ def getPriorProbOutsideTranscriptBoundsSNS(variant, boundaries):
     Returns prior prob and predicted qualitative enigma class
     Dictionary also contains other values that are either "N/A", "-", or 0 because they are not relevant
     '''
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     varType = getVarType(variant)
     if varLoc == "outside_transcript_boundaries_variant" and varType == "substitution":
         priorProb = LOW_PROBABILITY
@@ -3134,7 +3170,7 @@ def getPriorProbInIntronSNS(variant, boundaries, genome, transcript):
     AND a spliceFlag which is equal to 1 if variant creates a better de novo splice site than ref sequence
     Rest of values in dictionary are equal to 0, "-", or N/A because they are not relevant to variant
     '''
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     varType = getVarType(variant)
     if varLoc == "intron_variant" and varType == "substitution":
         deNovoDonorData = getPriorProbIntronicDeNovoDonorSNS(variant, genome, transcript)
@@ -3246,7 +3282,7 @@ def getPriorProbInUTRSNS(variant, boundaries, genome, transcript):
     Rest of values in dictionary are equal to 0, "-", or N/A because they are not relevant to variant
     '''
     # TO DO still need to account for creation of alternate ATG codons in 5' UTRs
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     varType = getVarType(variant)
     if varLoc == "UTR_variant" and varType == "substitution":
         deNovoAccData = {"priorProb": "N/A",
@@ -3426,7 +3462,7 @@ def getVarData(variant, boundaries, variantData, genome, transcript):
     Determines prior prob dictionary based on variant location
     Return dictionary containing all values for all new prior prob fields
     '''
-    varLoc = getVarLocation(variant, boundaries)
+    varLoc = getVarLocationSNS(variant, boundaries)
     varType = getVarType(variant)
     blankDict = {"applicablePrior": "-",
                  "applicableEnigmaClass": "-",
