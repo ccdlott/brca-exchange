@@ -3863,9 +3863,10 @@ class test_calcVarPriors(unittest.TestCase):
         self.assertEquals(seqLocDict[rangeStop], brca2Seq[-1])
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = brca1Seq)
-    def test_getAltSeqDictBRCA1(self, getFastaSeq):
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
+    def test_getAltSeqDictBRCA1SNS(self, getFastaSeq, getVarType):
         '''
-        Tests that for given variant genomic position:
+        Tests that for given SNS variant genomic position:
         1. Reference allele is set correctly in original dictionary (refSeqDict)
         2. Alternate allele is set correctly in alternate sequence dicitonary (altSeqDict)
         '''
@@ -3881,8 +3882,67 @@ class test_calcVarPriors(unittest.TestCase):
         self.assertEquals(refSeqDict[int(self.variant["Pos"])], self.variant["Ref"])
         self.assertEquals(altSeqDict[int(self.variant["Pos"])], self.variant["Alt"])
 
+    @mock.patch('calcVarPriors.getFastaSeq', return_value = "ATCAGATCCTAAAA")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    def test_getAltSeqDictBRCA1Deletion(self, getFastaSeq, getVarType):
+        '''Tests that function works for deletion variant for minus strand gene (BRCA1)'''
+        chrom = "chr17"
+        strand = "-"
+        rangeStart = "43097295"
+        rangeStop = "43097282"
+        refSeqDict = calcVarPriors.getSeqLocDict(chrom, strand, rangeStart, rangeStop)
+        self.variant["HGVS_cDNA"] = "c.548delG"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43097288"
+        self.variant["Hg38_End"] = "43097289"
+        self.variant["Ref"] = "TC"
+        self.variant["Alt"] = "T"
+        altSeqDict = calcVarPriors.getAltSeqDict(self.variant, refSeqDict)
+        delStart = int(self.variant["Hg38_Start"]) + 1
+        delEnd = int(self.variant["Hg38_End"])
+        self.assertNotIn(delStart, altSeqDict.keys())
+        self.assertNotIn(delEnd, altSeqDict.keys())
+
+    @mock.patch('calcVarPriors.getFastaSeq', return_value = "TATGGGTGAAA")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    def test_getAltSeqDictBRCA1Insertion(self, getFastaSeq, getVarType):
+        '''Tests that function works for insertion variant for minus strand gene (BRCA1)'''
+        chrom = "chr17"
+        strand = "-"
+        rangeStart = "43091955"
+        rangeStop = "43091945"
+        refSeqDict = calcVarPriors.getSeqLocDict(chrom, strand, rangeStart, rangeStop)
+        self.variant["HGVS_cDNA"] = "c.3580_3581insACCC"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "43091950"
+        self.variant["Ref"] = "G"
+        self.variant["Alt"] = "GGGGT"
+        altSeqDict = calcVarPriors.getAltSeqDict(self.variant, refSeqDict)
+        self.assertEquals(refSeqDict[int(self.variant["Pos"])], self.variant["Ref"])
+        self.assertEquals(altSeqDict[int(self.variant["Pos"])], self.variant["Alt"])
+
+    @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCTGTAGCCCA")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    def test_getAltSeqDictBRCA1Delins(self, getFastaSeq, getVarType):
+        '''Tests that function works for delins variant for minus strand gene (BRCA1)'''
+        chrom = "chr17"
+        strand = "-"
+        rangeStart = "43104180"
+        rangeStop = "43104170"
+        refSeqDict = calcVarPriors.getSeqLocDict(chrom, strand, rangeStart, rangeStop)
+        self.variant["HGVS_cDNA"] = "c.389_391delACAinsTCT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "43104172"
+        self.variant["Hg38_End"] = "43104174"
+        self.variant["Ref"] = "TGT"
+        self.variant["Alt"] = "AGA"
+        altSeqDict = calcVarPriors.getAltSeqDict(self.variant, refSeqDict)
+        delStart = int(self.variant["Hg38_Start"]) + 1
+        delEnd = int(self.variant["Hg38_End"])
+        self.assertEquals(altSeqDict[int(self.variant["Pos"])], self.variant["Alt"])
+        self.assertNotIn(delStart, altSeqDict.keys())
+        self.assertNotIn(delEnd, altSeqDict.keys())
+
     @mock.patch('calcVarPriors.getFastaSeq', return_value = brca2Seq)
-    def test_getAltSeqDictBRCA2(self, getFastaSeq):
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
+    def test_getAltSeqDictBRCA2SNS(self, getFastaSeq, getVarType):
         '''
         Tests that for given variant genomic position:
         1. Reference allele is set correctly in original dictionary (refSeqDict)
@@ -3899,6 +3959,64 @@ class test_calcVarPriors(unittest.TestCase):
         altSeqDict = calcVarPriors.getAltSeqDict(self.variant, refSeqDict)
         self.assertEquals(refSeqDict[int(self.variant["Pos"])], self.variant["Ref"])
         self.assertEquals(altSeqDict[int(self.variant["Pos"])], self.variant["Alt"])
+
+    @mock.patch('calcVarPriors.getFastaSeq', return_value = "ATTTTTTGAAATTTTTAAGAC")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    def test_getAltSeqDictBRCA2Deletion(self, getFastaSeq, getVarType):
+        '''Tests that function works for deletion variant for plus strand gene (BRCA2)'''
+        chrom = "chr13"
+        strand = "+"
+        rangeStart = "32316490"
+        rangeStop = "32316510"
+        refSeqDict = calcVarPriors.getSeqLocDict(chrom, strand, rangeStart, rangeStop)
+        self.variant["HGVS_cDNA"] = "c.37_44delGAAATTTT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32316496"
+        self.variant["Hg38_End"] = "32316504"
+        self.variant["Ref"] = "TGAAATTTT"
+        self.variant["Alt"] = "T"
+        altSeqDict = calcVarPriors.getAltSeqDict(self.variant, refSeqDict)
+        delStart = int(self.variant["Hg38_Start"]) + 1
+        delEnd = int(self.variant["Hg38_End"])
+        self.assertNotIn(delStart, altSeqDict.keys())
+        self.assertNotIn(delEnd, altSeqDict.keys())
+
+    @mock.patch('calcVarPriors.getFastaSeq', return_value = "CCCTATAATTC")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    def test_getAltSeqDictBRCA2Insertion(self, getFastaSeq, getVarType):
+        '''Tests that function works for insertion variant for plus strand gene (BRCA2)'''
+        chrom = "chr13"
+        strand = "+"
+        rangeStart = "32319130"
+        rangeStop = "32319140"
+        refSeqDict = calcVarPriors.getSeqLocDict(chrom, strand, rangeStart, rangeStop)
+        self.variant["HGVS_cDNA"] = "c.125_132dupATAATTCT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = self.variant["Hg38_End"] = "32319134"
+        self.variant["Ref"] = "A"
+        self.variant["Alt"] = "ATAATTCTA"
+        altSeqDict = calcVarPriors.getAltSeqDict(self.variant, refSeqDict)
+        self.assertEquals(refSeqDict[int(self.variant["Pos"])], self.variant["Ref"])
+        self.assertEquals(altSeqDict[int(self.variant["Pos"])], self.variant["Alt"])
+
+    @mock.patch('calcVarPriors.getFastaSeq', return_value = "AACACAAATCA")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    def test_getAltSeqDictBRCA2Delins(self, getFastaSeq, getVarType):
+        '''Tests that function works for delins variant for plus strand gene (BRCA2)'''
+        chrom = "chr13"
+        strand = "+"
+        rangeStart = "32331000"
+        rangeStop = "32331010"
+        refSeqDict = calcVarPriors.getSeqLocDict(chrom, strand, rangeStart, rangeStop)
+        self.variant["HGVS_cDNA"] = "c.765_770delCACAAAinsAAACAAT"
+        self.variant["Pos"] = self.variant["Hg38_Start"] = "32331002"
+        self.variant["Hg38_End"] = "32331007"
+        self.variant["Ref"] = "CACAAA"
+        self.variant["Alt"] = "AAACAAT"
+        altSeqDict = calcVarPriors.getAltSeqDict(self.variant, refSeqDict)
+        delStart = int(self.variant["Hg38_Start"]) + 1
+        delEnd = int(self.variant["Hg38_End"])
+        self.assertEquals(altSeqDict[int(self.variant["Pos"])], self.variant["Alt"])
+        self.assertNotIn(delStart, altSeqDict.keys())
+        self.assertNotIn(delEnd, altSeqDict.keys())
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = brca1Seq)
     def test_getAltSeqBRCA1(self, getFastaSeq):

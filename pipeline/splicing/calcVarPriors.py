@@ -913,12 +913,34 @@ def getAltSeqDict(variant, seqLocDict):
     '''
     varRef = variant["Ref"]
     varAlt = variant["Alt"]
+    varType = getVarType(variant)
     varGenPos = int(variant["Pos"])
-    seqLocDictRef = seqLocDict[varGenPos]
-    if varRef == seqLocDictRef:
-        altSeqDict = seqLocDict.copy()
-        altSeqDict[varGenPos] = varAlt
-    return altSeqDict
+    if varType == "substitution" or varType == "insertion":
+        seqLocDictRef = seqLocDict[varGenPos]
+        if varRef == seqLocDictRef:
+            altSeqDict = seqLocDict.copy()
+            altSeqDict[varGenPos] = varAlt
+        return altSeqDict
+    elif varType == "deletion":
+        delStart = varGenPos + 1
+        delEnd = int(variant["Hg38_End"])
+        seqDictCopy = seqLocDict.copy()
+        # to delete positions
+        for genPos in xrange(delStart, delEnd + 1):
+            if genPos in seqDictCopy.keys():
+                del seqDictCopy[genPos]
+        return seqDictCopy
+    elif varType == "delins":
+        delStart = varGenPos
+        delEnd = int(variant["Hg38_End"])
+        seqDictCopy = seqLocDict.copy()
+        # to delete positions
+        for genPos in xrange(delStart, delEnd + 1):
+            if genPos in seqDictCopy.keys():
+                del seqDictCopy[genPos]
+        # to insert new bases
+        seqDictCopy[delStart] = varAlt
+        return seqDictCopy
 
 def getAltSeq(altSeqDict, varStrand):
     '''
@@ -1005,7 +1027,7 @@ def getRefAltScores(refSeq, altSeq, donor=False):
                                "zScore": refZScore},
                  "altScores": {"maxEntScanScore": altMaxEntScanScore,
                                "zScore": altZScore}}
-    return scoreDict
+    return scoreDict        
 
 def getMaxEntScanScoresSlidingWindowSNS(variant, windowSize, donor=False):
     '''
@@ -1018,22 +1040,49 @@ def getMaxEntScanScoresSlidingWindowSNS(variant, windowSize, donor=False):
         2. window scores - ref and alt MaxEntScan scores and zscores for each window
         3. window alt MaxEntScan scores - only contains alt MaxEntScan scores for each window
     '''
-    varGenPos = int(variant["Pos"])
+    varGenStart = int(variant["Hg38_Start"])
+    varGenEnd = int(variant["Hg38_End"])
     varStrand = getVarStrand(variant)
-    # use +- (windowSize - 1) to get (windowSize*2 - 1) bp region so that have sequence for:
-    # each window of size windowSize bp with variant in each position (1-windowSize)
-    # minus strand and plus strand are opposite for +- (windowSize - 1) to preserve sequence returned by getRefAltSeqs
-    offset = windowSize - 1
-    varPos = windowSize
-    windowEnd = windowSize
-    totalPositions = windowSize
+    varType = getVarType(variant)
+    # use +- (windowSize - 1) to get (windowSize*2 - 1) bp region so that have sequence to slide through
+    if varType == "substitution":
+        startOffset = windowSize - 1
+        endOffset = windowSize - 1
+        varPos = windowSize
+        windowEnd = windowSize
+        totalPositions = windowSize
+    # use (windowSize - 2) and (windowSize - 1) to get sequence to slide through to get windowSize bp windows
+    elif varType == "deletion":
+        startOffset = windowSize - 2
+        endOffset = windowSize - 1
+        varPos = windowSize - 1
+        windowEnd = windowSize
+        totalPositions = windowSize - 1
+    elif varType == "insertion":
+    # TO DO make sure it works for duplications larger than 1 bp
+    # because not sure if would be getting sequence 3' to entire duplicated sequence
+        if varStrand == "-":
+            startOffset = (windowSize - 1) + len(variant["Alt"][1:])
+            # if 1 bp insertion or duplication
+            if len(variant["Alt"][1:]) == 1:
+                endOffset = windowSize - 2
+            else:
+                endOffset = windowSize - 1
+        else:
+            startOffset = windowSize - 2
+            endOffset = (windowSize - 1) + len(variant["Alt"][1:])
+        varPos = (windowSize - 1) + len(variant["Alt"][1:])
+        windowEnd = windowSize
+        totalPositions = (windowSize - 1) + len(variant["Alt"][1:])
+    # TO DO workon adapting this for delins variants
+    # to get each window of size windowSize bp with variant in each position (1-windowSize)
+    # minus strand and plus strand are opposite for to preserve sequence returned by getRefAltSeqs
+    regionStart = varGenStart - startOffset
+    regionEnd = varGenEnd + endOffset
     if varStrand == "-":
-        regionStart = varGenPos + offset
-        regionEnd = varGenPos - offset
+        refAltSeqs = getRefAltSeqs(variant, regionEnd, regionStart)
     else:
-        regionStart = varGenPos - offset
-        regionEnd = varGenPos + offset
-    refAltSeqs = getRefAltSeqs(variant, regionStart, regionEnd)
+        refAltSeqs = getRefAltSeqs(variant, regionStart, regionEnd)
     refSeq = refAltSeqs["refSeq"]
     altSeq = refAltSeqs["altSeq"]
     windowStart = 0
@@ -1045,6 +1094,7 @@ def getMaxEntScanScoresSlidingWindowSNS(variant, windowSize, donor=False):
         altWindowSeq = altSeq[windowStart:windowEnd]
         windowSeqs[varPos] = {"refSeq": refWindowSeq,
                               "altSeq": altWindowSeq}
+        #pdb.set_trace()
         refAltWindowScores = getRefAltScores(refWindowSeq, altWindowSeq, donor=donor)
         windowScores[varPos] = {"refMaxEntScanScore": refAltWindowScores["refScores"]["maxEntScanScore"],
                                 "refZScore": refAltWindowScores["refScores"]["zScore"],
@@ -1058,7 +1108,7 @@ def getMaxEntScanScoresSlidingWindowSNS(variant, windowSize, donor=False):
     return {"windowSeqs": windowSeqs,
             "windowScores": windowScores,
             "windowAltMaxEntScanScores": windowAltMaxEntScanScores}
-
+import pdb
 def getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, deNovoLength, donor=True, deNovo=False, deNovoDonorInRefAcc=False):
     '''
     Given a variant, determines the maximum alt MaxEntScan score in 
