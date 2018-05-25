@@ -645,14 +645,29 @@ def getVarSpliceRegionBounds(variant, donor=False, deNovo=False):
             regionBounds = getRefSpliceDonorBoundaries(variant, STD_DONOR_INTRONIC_LENGTH, STD_DONOR_EXONIC_LENGTH)
             regionStartKey = "donorStart"
             regionEndKey = "donorEnd"
+        varType = getVarType(variant)
         for exon in regionBounds.keys():
             regionStart = regionBounds[exon][regionStartKey]
             regionEnd = regionBounds[exon][regionEndKey]
-            withinBoundaries = checkWithinBoundaries(getVarStrand(variant), int(variant["Pos"]), regionStart, regionEnd)
-            if withinBoundaries == True:
-                return {"exonName": exon,
-                        regionStartKey: regionStart,
-                        regionEndKey: regionEnd}
+            if varType == "substitution" or varType == "insertion":
+                withinBoundaries = checkWithinBoundaries(getVarStrand(variant), int(variant["Pos"]), regionStart, regionEnd)
+                if withinBoundaries == True:
+                    return {"exonName": exon,
+                            regionStartKey: regionStart,
+                            regionEndKey: regionEnd}
+            else:
+                # for deletion/delins variants this funciton only works if variant is entirely located in splice region
+                varStrand = getVarStrand(variant)
+                varStart = int(variant["Pos"])
+                varEnd = int(variant["Hg38_End"])
+                if varType == "deletion":
+                    varStart = varStart + 1
+                startWithinBoundaries = checkWithinBoundaries(varStrand, varStart, regionStart, regionEnd)
+                endWithinBoundaries = checkWithinBoundaries(varStrand, varEnd, regionStart, regionEnd)
+                if startWithinBoundaries == True and endWithinBoundaries == True:
+                    return {"exonName": exon,
+                            regionStartKey: regionStart,
+                            regionEndKey: regionEnd}
                 
 def varInCIDomain(variant, boundaries):
     '''
@@ -1128,6 +1143,9 @@ def getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, deNovoLeng
     deNovoDonorInRefAcc = False if NOT checking for de novo splice donors in reference splice acceptor sites
     deNovoDonorInRefAcc = True if checking for de novo splice donors in reference splice acceptor sites        
     '''
+    # TO DO modify this function for indels (for indels don't need to remove native splicing window)
+    # because no alt sequence for indel will match native splicing window
+    # could modify function line 1061 so it includes "and getVarType(variant) == substitution"
     if donor == True:
         # uses default window size for a splice donor region
         slidingWindowInfo = getMaxEntScanScoresSlidingWindowSNS(variant, STD_DONOR_SIZE, donor=donor)
@@ -1170,7 +1188,10 @@ def getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, deNovoLeng
     maxVarPosition = maxAltWindowScore[0]
     maxScores = slidingWindowInfo["windowScores"][maxVarPosition]
     maxSeqs = slidingWindowInfo["windowSeqs"][maxVarPosition]
-    
+
+    # TO DO check with Michael about how this should work for indels
+    # for insertions would this be true if all of insertion is in exonic portion or just 1 bp
+    # for deletions what would this mean because base(s) are not in alt sequence
     # determines if variant is in the exonic portion specified by exonicPortionLength
     inExonicPortion = False
     if donor == True:
@@ -1232,6 +1253,8 @@ def getClosestExonNumberIntronicSNS(variant, boundaries, donor=True):
     Returns the closest exon end in the format "exonN"
     If variant is not in an intron or UTR, returns "exon0"
     '''
+    # TO DO write new function or modify this one to handle indels
+    # look at differences between getVarExonNumberSNS and getVarExonNumberStructuralVar to start
     varLoc = getVarLocationSNS(variant, boundaries)
     if (varLoc == "intron_variant" or varLoc == "UTR_variant")  and getVarType(variant) == "substitution" and varInExon(variant) == False:
         exonBounds = getExonBoundaries(variant)
@@ -1256,7 +1279,7 @@ def getClosestExonNumberIntronicSNS(variant, boundaries, donor=True):
         return closestExonInfo[0]
     return "exon0"
                 
-def getClosestSpliceSiteScores(variant, deNovoOffset, donor=True, deNovo=False, deNovoDonorInRefAcc=False, testMode=False):
+def getClosestSpliceSiteScoresSNS(variant, deNovoOffset, donor=True, deNovo=False, deNovoDonorInRefAcc=False, testMode=False):
     '''
     Given a variant, determines scores for closest reference splice sequence
     Also returns sequence of closest reference splice site and genomic position of splice site
@@ -1277,6 +1300,9 @@ def getClosestSpliceSiteScores(variant, deNovoOffset, donor=True, deNovo=False, 
     deNovoDonorInRefAcc = False if NOT checking for de novo splice donor sites in reference splice acceptor sites
     deNovoDonorInRefAcc = True if checking for de novo splice donor sites in reference splice acceptor sites 
     '''
+    # TO DO modify this function to work for indels
+    # use functions getVarExonNumberStructuralVar, getVarSpliceRegionBoudns, and modified version of getClosestExonNumberIntronicSNS
+    # note for de novo splice acceptors deNovoOffset=7, if variant strictly in ref splice acceptor site deNovoOffset = 0
     varGenPos = int(variant["Pos"])
     varChrom = getVarChrom(variant)
     varLoc = getVarLocationSNS(variant, "enigma")
@@ -1676,7 +1702,7 @@ def getPriorProbSpliceRescueNonsenseSNS(variant, boundaries, deNovoDonorInRefAcc
                         elif (altMES >= LOW_MES_CUTOFF) and (altMES <= HIGH_MES_CUTOFF):
                             # still a weak splice site, but possibility of splice rescue
                             deNovoOffset = 0
-                            closestRefData = getClosestSpliceSiteScores(variant, deNovoOffset, donor=True, deNovo=False,
+                            closestRefData = getClosestSpliceSiteScoresSNS(variant, deNovoOffset, donor=True, deNovo=False,
                                                                         deNovoDonorInRefAcc=deNovoDonorInRefAcc)
                             closestZScore = closestRefData["zScore"]
                             if varInSpliceRegion(variant, donor=True, deNovo=False) == True:
@@ -2185,7 +2211,7 @@ def getPriorProbDeNovoDonorSNS(variant, boundaries, exonicPortionSize, genome, t
                                                             slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
                                                             donor=True) + 1
             deNovoOffset = 0
-            subDonorInfo = getClosestSpliceSiteScores(variant, deNovoOffset, donor=True, deNovo=False,
+            subDonorInfo = getClosestSpliceSiteScoresSNS(variant, deNovoOffset, donor=True, deNovo=False,
                                                       deNovoDonorInRefAcc=deNovoDonorInRefAcc)
             subZScore = subDonorInfo["zScore"]
             refAltZScore = "N/A"
@@ -2307,7 +2333,7 @@ def getPriorProbDeNovoAcceptorSNS(variant, exonicPortionSize, deNovoLength, geno
                                                        slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
                                                        donor=False)
             deNovoOffset = deNovoLength - exonicPortionSize
-            closestAccInfo = getClosestSpliceSiteScores(variant, STD_DE_NOVO_OFFSET, donor=False, deNovo=True,
+            closestAccInfo = getClosestSpliceSiteScoresSNS(variant, STD_DE_NOVO_OFFSET, donor=False, deNovo=True,
                                                         deNovoDonorInRefAcc=False)
             refAltZScore = "N/A"
             refAltMES = "N/A"
@@ -3155,7 +3181,7 @@ def getPriorProbIntronicDeNovoDonorSNS(variant, genome, transcript):
             refMES = deNovoDonorInfo["refMaxEntScanScore"]
             altMES = deNovoDonorInfo["altMaxEntScanScore"]
             deNovoOffset = 0
-            closestDonorInfo = getClosestSpliceSiteScores(variant, deNovoOffset, donor=True, deNovo=False, deNovoDonorInRefAcc=False, testMode=False)
+            closestDonorInfo = getClosestSpliceSiteScoresSNS(variant, deNovoOffset, donor=True, deNovo=False, deNovoDonorInRefAcc=False, testMode=False)
             closestMES = closestDonorInfo["maxEntScanScore"]
             spliceFlag = 0
             altGreaterRefFlag = 0
