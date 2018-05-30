@@ -6058,7 +6058,8 @@ class test_calcVarPriors(unittest.TestCase):
                                                                                   isCIDomainInRegion,
                                                                                   isDeNovoWildTypeSplicePosDistanceDivisibleByThree,
                                                                                   getMaxMaxEntScanScoreSlidingWindowSNS,
-                                                                                  getClosestSpliceSiteScores,
+                                                                                  getClosestSpliceSiteScores, varInSpliceRegion,
+                                                                                  getPriorProbRefSpliceDonorSNS):
         '''
         Tests function for in-frame FICTIONAL variant that does not disrupt CI domain where altZScore > refZScore and 6.2 <= altMES <= 8.5 
         and altZScore > closestZScore (in this case variant is in a ref splice donor so altZScore > closestAltZScore) so possible splice rescue
@@ -6412,7 +6413,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCTTACCTT")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon14',
                                                                           'donorStart': 43076490,
                                                                           'donorEnd': 43076482})
@@ -6440,7 +6441,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCTTACCTT")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon14',
                                                                           'donorStart': 43076490,
                                                                           'donorEnd': 43076482})
@@ -6468,7 +6469,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TTTTACCAA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon7',
                                                                           'donorStart': 43104124,
                                                                           'donorEnd': 43104116})
@@ -6496,7 +6497,7 @@ class test_calcVarPriors(unittest.TestCase):
         
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCTTACCTT")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon14',
                                                                           'donorStart': 43076490,
                                                                           'donorEnd': 43076482})
@@ -6524,7 +6525,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "ACTCACCTG")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon9',
                                                                           'donorStart': 43097246,
                                                                           'donorEnd': 43097238})
@@ -6533,7 +6534,7 @@ class test_calcVarPriors(unittest.TestCase):
                                                                  'refScores': {'zScore': 1.1729987773204027,
                                                                                'maxEntScanScore': 10.67}})
     @mock.patch('calcVarPriors.getVarSeqIndexSNS', return_value = 3)
-    def test_getPriorProbRefSpliceDonorSNSCappedProbBRCA1Exon9(self, getFastaSeq, getVarType, getVarLocation,
+    def test_getPriorProbRefSpliceDonorSNSCappedProbBRCA1Exon9(self, getFastaSeq, getVarType, getVarLocationSNS,
                                                                getVarSpliceRegionBounds, getRefAltScores,
                                                                getVarSeqIndexSNS):
         '''Tests function for BRCA1 variant in exon 9 that has a capped prior probability'''
@@ -6552,7 +6553,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "CATTACCCT")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon10',
                                                                           'donorStart': 43095848,
                                                                           'donorEnd': 43095840})
@@ -6561,7 +6562,7 @@ class test_calcVarPriors(unittest.TestCase):
                                                                  'refScores': {'zScore': -0.8407447560714822,
                                                                                'maxEntScanScore': 5.98}})
     @mock.patch('calcVarPriors.getVarSeqIndexSNS', return_value = 2)
-    def test_getPriorProbRefSpliceDonorSNSCappedProbBRCA1Exon10(self, getFastaSeq, getVarType, getVarLocation,
+    def test_getPriorProbRefSpliceDonorSNSCappedProbBRCA1Exon10(self, getFastaSeq, getVarType, getVarLocationSNS,
                                                                 getVarSpliceRegionBounds, getRefAltScores,
                                                                 getVarSeqIndexSNS):
         '''Tests function for BRCA1 variant in exon 10 that has a capped prior probability'''
@@ -6580,7 +6581,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCGGTAAGA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon13',
                                                                           'donorStart': 32346894,
                                                                           'donorEnd': 32346902})
@@ -6608,7 +6609,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCGGTAAGA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon13',
                                                                           'donorStart': 32346894,
                                                                           'donorEnd': 32346902})
@@ -6636,7 +6637,7 @@ class test_calcVarPriors(unittest.TestCase):
         
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "CAGGCAAGT")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon17',
                                                                           'donorStart': 32362691,
                                                                           'donorEnd': 32362699})
@@ -6664,7 +6665,7 @@ class test_calcVarPriors(unittest.TestCase):
         
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCGGTAAGA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon13',
                                                                           'donorStart': 32346894,
                                                                           'donorEnd': 32346902})
@@ -6692,7 +6693,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "ATGGTAAAA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_donor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_donor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'exonName': 'exon12',
                                                                           'donorStart': 32344651,
                                                                           'donorEnd': 32344659})
@@ -6701,7 +6702,7 @@ class test_calcVarPriors(unittest.TestCase):
                                                                  'refScores': {'zScore': -1.3516946078276324,
                                                                                'maxEntScanScore': 4.79}})
     @mock.patch('calcVarPriors.getVarSeqIndexSNS', return_value = 0)
-    def test_getPriorProbRefSpliceDonorSNSCappedProbBRCA2Exon12(self, getFastaSeq, getVarType, getVarLocation,
+    def test_getPriorProbRefSpliceDonorSNSCappedProbBRCA2Exon12(self, getFastaSeq, getVarType, getVarLocationSNS,
                                                                 getVarSpliceRegionBounds, getRefAltScores,
                                                                 getVarSeqIndexSNS):
         '''Tests function for BRCA2 variant in exon 12 that has a capped prior probability'''
@@ -6720,7 +6721,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "CATCTGTAAAATACAAGGGAAAA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 43104281,
                                                                           'exonName': 'exon7',
                                                                           'acceptorEnd': 43104259})
@@ -6748,7 +6749,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "CATCTGTAAAATACAAGGGAAAA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 43104281,
                                                                           'exonName': 'exon7',
                                                                           'acceptorEnd': 43104259})
@@ -6776,7 +6777,7 @@ class test_calcVarPriors(unittest.TestCase):
         
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "GAACTTTAACACATTAGAAAAAC")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 43124135,
                                                                           'exonName': 'exon2',
                                                                           'acceptorEnd': 43124113})
@@ -6804,7 +6805,7 @@ class test_calcVarPriors(unittest.TestCase):
         
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "CATCTGTAAAATACAAGGGAAAA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 43104281,
                                                                           'exonName': 'exon7',
                                                                           'acceptorEnd': 43104259})
@@ -6832,7 +6833,7 @@ class test_calcVarPriors(unittest.TestCase):
         
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "ATCCTAAAAAATTTCCCCCCAAA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 43097309,
                                                                           'exonName': 'exon9',
                                                                           'acceptorEnd': 43097287})
@@ -6841,7 +6842,7 @@ class test_calcVarPriors(unittest.TestCase):
                                                                  'refScores': {'zScore': -2.122278451958519,
                                                                                'maxEntScanScore': 2.82}})
     @mock.patch('calcVarPriors.getVarSeqIndexSNS', return_value = 21)
-    def test_getPriorProbRefSpliceAcceptorSNSCappedProbBRCA1Exon9(self, getFastaSeq, getVarType, getVarLocation,
+    def test_getPriorProbRefSpliceAcceptorSNSCappedProbBRCA1Exon9(self, getFastaSeq, getVarType, getVarLocationSNS,
                                                                   getVarSpliceRegionBounds, getRefAltScores,
                                                                   getVarSeqIndexSNS):
         '''Tests function for BRCA1 variant in exon 9 that has a capped prior probability'''
@@ -6860,7 +6861,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "ACACTATAGGGAAAAGACAGAGT")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 43095942,
                                                                           'exonName': 'exon10',
                                                                           'acceptorEnd': 43095920})
@@ -6869,7 +6870,7 @@ class test_calcVarPriors(unittest.TestCase):
                                                                  'refScores': {'zScore': 0.8280076066834324,
                                                                                'maxEntScanScore': 10.0}})
     @mock.patch('calcVarPriors.getVarSeqIndexSNS', return_value = 18)
-    def test_getPriorProbRefSpliceAcceptorSNSCappedProbBRCA1Exon10(self, getFastaSeq, getVarType, getVarLocation,
+    def test_getPriorProbRefSpliceAcceptorSNSCappedProbBRCA1Exon10(self, getFastaSeq, getVarType, getVarLocationSNS,
                                                                    getVarSpliceRegionBounds, getRefAltScores,
                                                                    getVarSeqIndexSNS):
         '''Tests function for BRCA1 variant in exon 10 that has a capped prior probability'''
@@ -6888,7 +6889,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCTCATCTTTCTCCAAACAGTTA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 32379730,
                                                                           'exonName': 'exon23',
                                                                           'acceptorEnd': 32379752})
@@ -6916,7 +6917,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCTCATCTTTCTCCAAACAGTTA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 32379730,
                                                                           'exonName': 'exon23',
                                                                           'acceptorEnd': 32379752})
@@ -6944,7 +6945,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "AAGTATTTATTCTTTGATAGATT")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 32356408,
                                                                           'exonName': 'exon15',
                                                                           'acceptorEnd': 32356430})
@@ -6972,7 +6973,7 @@ class test_calcVarPriors(unittest.TestCase):
         
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TCTCATCTTTCTCCAAACAGTTA")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 32379730,
                                                                           'exonName': 'exon23',
                                                                           'acceptorEnd': 32379752})
@@ -7000,7 +7001,7 @@ class test_calcVarPriors(unittest.TestCase):
 
     @mock.patch('calcVarPriors.getFastaSeq', return_value = "TATGAAATATTTCTTTTTAGGAG")
     @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
-    @mock.patch('calcVarPriors.getVarLocation', return_value = "splice_acceptor_variant")
+    @mock.patch('calcVarPriors.getVarLocationSNS', return_value = "splice_acceptor_variant")
     @mock.patch('calcVarPriors.getVarSpliceRegionBounds', return_value = {'acceptorStart': 32344538,
                                                                           'exonName': 'exon12',
                                                                           'acceptorEnd': 32344560})
@@ -7009,7 +7010,7 @@ class test_calcVarPriors(unittest.TestCase):
                                                                  'refScores': {'zScore': 0.10070867579258944,
                                                                                'maxEntScanScore': 8.23}})
     @mock.patch('calcVarPriors.getVarSeqIndexSNS', return_value = 9)
-    def test_getPriorProbRefSpliceAcceptorSNSCappedProbBRCA2Exon12(self, getFastaSeq, getVarType, getVarLocation,
+    def test_getPriorProbRefSpliceAcceptorSNSCappedProbBRCA2Exon12(self, getFastaSeq, getVarType, getVarLocationSNS,
                                                                    getVarSpliceRegionBounds, getRefAltScores,
                                                                    getVarSeqIndexSNS):
         '''Tests function for BRCA2 variant in exon 12 that has a capped prior probability'''
