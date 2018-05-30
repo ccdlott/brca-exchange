@@ -602,7 +602,7 @@ def varInSpliceRegion(variant, donor=False, deNovo=False):
     varStrand = getVarStrand(variant)
     varType = getVarType(variant)
     variantCopy = variant.copy()
-    if varType == "deletion" or varType == "delins":
+    if varType == "deletion":
         # +1 due to RefSeq numbering and position
         variantCopy["Pos"] = varGenPos + 1
         varGenPos = variantCopy["Pos"]
@@ -1123,7 +1123,7 @@ def getMaxEntScanScoresSlidingWindowSNS(variant, windowSize, donor=False):
     return {"windowSeqs": windowSeqs,
             "windowScores": windowScores,
             "windowAltMaxEntScanScores": windowAltMaxEntScanScores}
-import pdb
+
 def getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, deNovoLength, donor=True, deNovo=False, deNovoDonorInRefAcc=False):
     '''
     Given a variant, determines the maximum alt MaxEntScan score in 
@@ -1225,6 +1225,8 @@ def varInExonicPortion(variant, exonicPortionSize, deNovoLength, donor=True, deN
     if deNovoDonorInRefAcc=False, function is not used for de novo donors in ref splice acceptor sites
     Returns true if variant is in exonic portion, False otherwise
     '''
+    # TO DO follow up on how exonic portion will be defined for structural variants
+    # after that is clarified and implemented in the function above, this function should not need any modifications
     slidingWindowInfo = getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize=exonicPortionSize,
                                                               deNovoLength=deNovoLength, donor=donor,
                                                               deNovoDonorInRefAcc=deNovoDonorInRefAcc)
@@ -1240,6 +1242,8 @@ def getVarWindowPosition(variant, donor=True, deNovoDonorInRefAcc=False):
     Returns integer 1-STD_ACC_SIZE based on variant position in highest scoring window if donor=False
     deNovoDonorInRefAcc=True if looking for deNovoDonor in ref acceptor site, False otherwise
     '''
+    # TO DO follow up on how window position should be defined for structural variants
+    # after this is implemented above, this function should not need any modifications
     slidingWindowInfo = getMaxMaxEntScanScoreSlidingWindowSNS(variant, STD_EXONIC_PORTION, STD_DE_NOVO_LENGTH,
                                                               donor=donor, deNovoDonorInRefAcc=deNovoDonorInRefAcc)
     varWindowPos = slidingWindowInfo["varWindowPosition"]
@@ -1385,6 +1389,7 @@ def isCIDomainInRegion(regionStart, regionEnd, boundaries, gene):
     For plus strand gene (BRCA2) regionStart < regionEnd
     Returns True if there is an overlap, False otherwise
     '''
+    # TO DO, no modifications should be necessary for this function
     if gene == "BRCA1":
         if regionStart < regionEnd:
             start = regionEnd
@@ -1451,7 +1456,7 @@ def getRefExonLength(variant, donor=True):
         exonLength = varExonEnd - varExonStart
     return exonLength
 
-def getNewSplicePosition(varGenPos, varStrand, varWindowPos, inExonicPortion, exonicPortionSize, intronicPortionSize, donor=True):
+def getNewSplicePositionSNS(varGenPos, varStrand, varWindowPos, inExonicPortion, exonicPortionSize, intronicPortionSize, donor=True):
     '''
     Given a variant's:
     genetic postion, strand, sliding window position with max MES score AND
@@ -1483,7 +1488,7 @@ def getNewSplicePosition(varGenPos, varStrand, varWindowPos, inExonicPortion, ex
                 newSplicePos = int(varGenPos) + (varWindowPos - intronicPortionSize)
     return newSplicePos
     
-def getAltExonLength(variant, exonicPortionSize, intronicPortionSize, deNovoDonorInRefAcc=False, donor=True):
+def getAltExonLengthSNS(variant, exonicPortionSize, intronicPortionSize, deNovoDonorInRefAcc=False, donor=True):
     '''
     Given a variant and the exonic portion size,
     returns the length of the alternate exon after splicing occurs in max MES window
@@ -1504,8 +1509,8 @@ def getAltExonLength(variant, exonicPortionSize, intronicPortionSize, deNovoDono
     exonBounds = getExonBoundaries(variant)
     slidingWindowInfo = getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, STD_DE_NOVO_LENGTH, donor=donor,
                                                               deNovoDonorInRefAcc=deNovoDonorInRefAcc)
-    newSplicePos = getNewSplicePosition(variant["Pos"], getVarStrand(variant), slidingWindowInfo["varWindowPosition"],
-                                        slidingWindowInfo["inExonicPortion"], exonicPortionSize, intronicPortionSize, donor=donor)
+    newSplicePos = getNewSplicePositionSNS(variant["Pos"], getVarStrand(variant), slidingWindowInfo["varWindowPosition"],
+                                           slidingWindowInfo["inExonicPortion"], exonicPortionSize, intronicPortionSize, donor=donor)
     if getVarStrand(variant) == "-":
         if donor == True:
             varExonStart = int(exonBounds[varExonNum]["exonStart"])
@@ -1550,11 +1555,11 @@ def isSplicingWindowInFrame(variant, exonicPortionSize, intronicPortionSize, deN
     # TO DO modify this to work for structural variants
     # should just need to add check for variant type and then use SNS and structural variant functions accordingly
     refLength = getRefExonLength(variant, donor=donor)
-    altLength = getAltExonLength(variant, exonicPortionSize, intronicPortionSize, deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=donor)
+    altLength = getAltExonLengthSNS(variant, exonicPortionSize, intronicPortionSize, deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=donor)
     return compareRefAltExonLengths(refLength, altLength)
 
-def isDeNovoWildTypeSplicePosDistanceDivisibleByThree(variant, exonicPortionSize, intronicPortionSize,
-                                                      deNovoDonorInRefAcc=False, donor=True):
+def isDeNovoWildTypeSplicePosDistanceDivisibleByThreeSNS(variant, exonicPortionSize, intronicPortionSize,
+                                                         deNovoDonorInRefAcc=False, donor=True):
     '''
     Given a variant, compares de novo splicing position with wild-type splicing position
     exonicPortionSize refers to length in bp that is considered to be in exonic portion of splice site
@@ -1568,7 +1573,9 @@ def isDeNovoWildTypeSplicePosDistanceDivisibleByThree(variant, exonicPortionSize
        If it returns False, then de novo splicing would cause a frameshift
     '''
     # TO DO likely will have to write new function to deal with structural variants
-    # will need to compare wild-type splice posiiton to 
+    # will need to compare wild-type splice posiiton to new splice position
+    # and account for any bases that were added/deleted before new splice position
+    # also need to use structural var specific functions to get varExonNum
     if varInExon(variant) == True:
         varExonNum = getVarExonNumberSNS(variant)
     else:
@@ -1581,8 +1588,8 @@ def isDeNovoWildTypeSplicePosDistanceDivisibleByThree(variant, exonicPortionSize
     refExonBounds = getExonBoundaries(variant)
     slidingWindowInfo = getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, STD_DE_NOVO_LENGTH, donor=donor,
                                                               deNovoDonorInRefAcc=deNovoDonorInRefAcc)
-    deNovoSplicePos = getNewSplicePosition(variant["Pos"], varStrand, slidingWindowInfo["varWindowPosition"],
-                                           slidingWindowInfo["inExonicPortion"], exonicPortionSize, intronicPortionSize, donor=donor)
+    deNovoSplicePos = getNewSplicePositionSNS(variant["Pos"], varStrand, slidingWindowInfo["varWindowPosition"],
+                                              slidingWindowInfo["inExonicPortion"], exonicPortionSize, intronicPortionSize, donor=donor)
     if donor == True:
         wildTypeSplicePos = refExonBounds[varExonNum]["exonEnd"]
         if varStrand == "+":
@@ -1616,6 +1623,11 @@ def getPriorProbSpliceRescueNonsenseSNS(variant, boundaries, deNovoDonorInRefAcc
       isDivisibleFlag: equals 1 if distance between de novo donor and wild-type donor splice site is NOT divisible by 3, 
          0 if not
     '''
+    # TO DO Write new function to check and see if splice rescue is possible for structural variants
+    # might have to make some changes to part about varInExonicPortion and
+    # how check to see if part of CI domain is truncated
+    # for structural variants, don't need to check if variant is a nonsense variant
+    # will need to check if structural variant causes a frameshift and if splicing would restore normal reading frame
     if varInIneligibleDeNovoExon(variant, donor=True) == True:
         return {"priorProb": PATHOGENIC_PROBABILITY,
                 "enigmaClass": "class_5",
@@ -1666,12 +1678,12 @@ def getPriorProbSpliceRescueNonsenseSNS(variant, boundaries, deNovoDonorInRefAcc
                 inExonicPortion = varInExonicPortion(variant, STD_EXONIC_PORTION, STD_DE_NOVO_LENGTH, donor=True,
                                                      deNovoDonorInRefAcc=deNovoDonorInRefAcc)
                 # gets region from new splice position to next splice acceptor
-                regionStart = getNewSplicePosition(varGenPos, varStrand, varWindowPos, inExonicPortion, STD_EXONIC_PORTION,
-                                                   STD_ACC_INTRONIC_LENGTH, donor=True)
+                regionStart = getNewSplicePositionSNS(varGenPos, varStrand, varWindowPos, inExonicPortion, STD_EXONIC_PORTION,
+                                                      STD_ACC_INTRONIC_LENGTH, donor=True)
                 regionEnd = refSpliceAccBounds[nextExonNum]["acceptorStart"]
                 CIDomainInRegion = isCIDomainInRegion(regionStart, regionEnd, boundaries, variant["Gene_Symbol"])
-                isDivisible = isDeNovoWildTypeSplicePosDistanceDivisibleByThree(variant, STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
-                                                                                deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=True)
+                isDivisible = isDeNovoWildTypeSplicePosDistanceDivisibleByThreeSNS(variant, STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
+                                                                                   deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=True)
                 # if truncated region includes a clinically important domain or causes a frameshift
                 if CIDomainInRegion == True:
                     priorProb = PATHOGENIC_PROBABILITY
@@ -1781,8 +1793,8 @@ def getDeNovoSpliceFrameshiftStatus(variant, donor=True, deNovoDonorInRefAcc=Fal
     inFrame = isSplicingWindowInFrame(variant, STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
                                       deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=donor)
     # if isDivisble == Flase then distance between old and new splice position is not divislbe by 3
-    isDivisible = isDeNovoWildTypeSplicePosDistanceDivisibleByThree(variant, STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
-                                                                    deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=donor)
+    isDivisible = isDeNovoWildTypeSplicePosDistanceDivisibleByThreeSNS(variant, STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
+                                                                       deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=donor)
     if inFrame == False or isDivisible == False:
         return True
     return False
@@ -2061,6 +2073,9 @@ def varInIneligibleDeNovoExon(variant, donor=True):
     Determines whether that variant is in an eligible exon to be evaluated for de novo splicing
     If in ineligible exon, returns True, returns False otherwise
     '''
+    # TO DO modify to work for structural variants
+    # need to use getVarExonNumberStructuralVar and also check to see how much of variant in ineligible exon
+    # if only small part, need to check for splicing rescue up until variant is part of ineligible exon
     if varInExon(variant) == True:
         varGene = variant["Gene_Symbol"]
         varExon = getVarExonNumberSNS(variant)
@@ -2076,7 +2091,7 @@ def varInIneligibleDeNovoExon(variant, donor=True):
                 return True
         return False
 
-def getDeNovoFrameshiftAndCIStatus(variant, boundaries, donor=True, deNovoDonorInRefAcc=False):
+def getDeNovoFrameshiftAndCIStatusSNS(variant, boundaries, donor=True, deNovoDonorInRefAcc=False):
     '''
     Given a variant, boundaries (enigma or priors), donor argument, and deNovoDonorInRefAcc argument:
       donor argument = True for de novo donors, False for de novo acceptors
@@ -2108,8 +2123,8 @@ def getDeNovoFrameshiftAndCIStatus(variant, boundaries, donor=True, deNovoDonorI
         varWindowPos = getVarWindowPosition(variant, donor=donor, deNovoDonorInRefAcc=deNovoDonorInRefAcc)
         inExonicPortion = varInExonicPortion(variant, STD_EXONIC_PORTION, STD_DE_NOVO_LENGTH, donor=donor,
                                              deNovoDonorInRefAcc=deNovoDonorInRefAcc)
-        regionStart = getNewSplicePosition(variant["Pos"], getVarStrand(variant), varWindowPos, inExonicPortion,
-                                           STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH, donor=donor)
+        regionStart = getNewSplicePositionSNS(variant["Pos"], getVarStrand(variant), varWindowPos, inExonicPortion,
+                                              STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH, donor=donor)
         if donor == True:
             # nextExonNum parses out N from varExonNum and adds 1 to get next exon number "exonN+1"
             # uses [4:] to remove "exon" from "exonN" so can add 1 to N to get N+1
@@ -2213,13 +2228,13 @@ def getPriorProbDeNovoDonorSNS(variant, boundaries, exonicPortionSize, genome, t
                                                                       donor=True, deNovoDonorInRefAcc=deNovoDonorInRefAcc)
             # +-1 because per HCI PRIORS website donor position is defined as being first nucleotide that is NOT included in spliced exon
             if getVarStrand(variant) == "-":
-                newGenomicSplicePos = getNewSplicePosition(variant["Pos"], "-", slidingWindowInfo["varWindowPosition"],
-                                                           slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
-                                                            donor=True) - 1
+                newGenomicSplicePos = getNewSplicePositionSNS(variant["Pos"], "-", slidingWindowInfo["varWindowPosition"],
+                                                              slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION,
+                                                              STD_ACC_INTRONIC_LENGTH, donor=True) - 1
             else:
-                newGenomicSplicePos = getNewSplicePosition(variant["Pos"], "+", slidingWindowInfo["varWindowPosition"],
-                                                            slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
-                                                            donor=True) + 1
+                newGenomicSplicePos = getNewSplicePositionSNS(variant["Pos"], "+", slidingWindowInfo["varWindowPosition"],
+                                                              slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION,
+                                                              STD_ACC_INTRONIC_LENGTH, donor=True) + 1
             deNovoOffset = 0
             subDonorInfo = getClosestSpliceSiteScoresSNS(variant, deNovoOffset, donor=True, deNovo=False,
                                                       deNovoDonorInRefAcc=deNovoDonorInRefAcc)
@@ -2274,8 +2289,8 @@ def getPriorProbDeNovoDonorSNS(variant, boundaries, exonicPortionSize, genome, t
                 altGreaterClosestAltFlag = 1
 
             if frameshiftFlag == 0 and priorProb != 0:
-                frameshiftAndCIStatus = getDeNovoFrameshiftAndCIStatus(variant, boundaries, donor=True,
-                                                                       deNovoDonorInRefAcc=deNovoDonorInRefAcc)
+                frameshiftAndCIStatus = getDeNovoFrameshiftAndCIStatusSNS(variant, boundaries, donor=True,
+                                                                          deNovoDonorInRefAcc=deNovoDonorInRefAcc)
                 if frameshiftAndCIStatus == True:
                     priorProb = LOW_PROBABILITY
 
@@ -2339,9 +2354,9 @@ def getPriorProbDeNovoAcceptorSNS(variant, exonicPortionSize, deNovoLength, geno
         if varInSpliceRegion(variant, donor=False, deNovo=True) == True:
             slidingWindowInfo = getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, deNovoLength,
                                                                         donor=False)
-            newGenomicSplicePos = getNewSplicePosition(variant["Pos"], getVarStrand(variant), slidingWindowInfo["varWindowPosition"],
-                                                       slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
-                                                       donor=False)
+            newGenomicSplicePos = getNewSplicePositionSNS(variant["Pos"], getVarStrand(variant), slidingWindowInfo["varWindowPosition"],
+                                                          slidingWindowInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
+                                                          donor=False)
             deNovoOffset = deNovoLength - exonicPortionSize
             closestAccInfo = getClosestSpliceSiteScoresSNS(variant, STD_DE_NOVO_OFFSET, donor=False, deNovo=True,
                                                         deNovoDonorInRefAcc=False)
@@ -3181,13 +3196,13 @@ def getPriorProbIntronicDeNovoDonorSNS(variant, genome, transcript):
                                                                     donor=True, deNovo=False, deNovoDonorInRefAcc=False)
             # +-1 because per HCI PRIORS website donor position is defined as being first nucleotide that is NOT included in spliced exon
             if getVarStrand(variant) == "-":
-                 newGenomicSplicePos = getNewSplicePosition(variant["Pos"], "-", deNovoDonorInfo["varWindowPosition"],
-                                                            deNovoDonorInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
-                                                            donor=True) - 1
+                 newGenomicSplicePos = getNewSplicePositionSNS(variant["Pos"], "-", deNovoDonorInfo["varWindowPosition"],
+                                                               deNovoDonorInfo["inExonicPortion"], STD_EXONIC_PORTION,
+                                                               STD_ACC_INTRONIC_LENGTH, donor=True) - 1
             else:
-                newGenomicSplicePos = getNewSplicePosition(variant["Pos"], "+", deNovoDonorInfo["varWindowPosition"],
-                                                            deNovoDonorInfo["inExonicPortion"], STD_EXONIC_PORTION, STD_ACC_INTRONIC_LENGTH,
-                                                            donor=True) + 1
+                newGenomicSplicePos = getNewSplicePositionSNS(variant["Pos"], "+", deNovoDonorInfo["varWindowPosition"],
+                                                              deNovoDonorInfo["inExonicPortion"], STD_EXONIC_PORTION,
+                                                              STD_ACC_INTRONIC_LENGTH, donor=True) + 1
             refMES = deNovoDonorInfo["refMaxEntScanScore"]
             altMES = deNovoDonorInfo["altMaxEntScanScore"]
             deNovoOffset = 0
@@ -3538,6 +3553,10 @@ def getPriorProbInUTRSNS(variant, boundaries, genome, transcript):
                 "CIDomainInRegionFlag": "N/A",
                 "isDivisibleFlag": "N/A",
                 "lowMESFlag": "N/A"}
+
+# TO DO Write function necessary to get prior prob for structural variants
+# see pseudocode at this link https://docs.google.com/document/d/1JgSVo5yC2VZeRwvSomoaxPuG4WvlMtkDnYUwRogaMmU/edit?usp=sharing
+# and check with Michael about any questions you have about the pseudocode
 
 def getVarData(variant, boundaries, variantData, genome, transcript):
     '''
