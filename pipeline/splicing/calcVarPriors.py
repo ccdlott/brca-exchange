@@ -1422,6 +1422,8 @@ def getRefExonLength(variant, donor=True):
       If donor=True, returns exon length for previous exon
       If donor=False, returns exon length for subsequent exon
     '''
+    # TO DO modify this to accomodate structural variants
+    # should just need to change SNS functions to appropriate structural variant functions
     if varInExon(variant) == True:
         varExonNum = getVarExonNumberSNS(variant)
     else:
@@ -1456,6 +1458,7 @@ def getNewSplicePosition(varGenPos, varStrand, varWindowPos, inExonicPortion, ex
       whether that position is within exonic portion of highest scoring window, exonic portion size, and intronic portion size
     Returns the position where splicing occurs for a de novo splice donor or acceptor (depending on donor=True argument)
     '''
+    # TO DO write new function to handle structural variants (I don't think you'll be able to just modify this one)
     if varStrand == "+":
         if inExonicPortion == False:
             if donor == True:
@@ -1487,6 +1490,9 @@ def getAltExonLength(variant, exonicPortionSize, intronicPortionSize, deNovoDono
     Donor argument determines if function is used for de novo donor (donor=True) or de novo acceptor (donor=False)
     deNovoDonorInRefAcc=True if looking for deNovoDonor in ref acceptor site, False otherwise
     '''
+    # TO DO write new function to handle structural variants
+    # need to account for possible bases that are added/deleted and deal with new splice position
+    # function getRefAltSeqs might be helpful here using varExonStart and varExonEnd as start and end points
     if varInExon(variant) == True:
         varExonNum = getVarExonNumberSNS(variant)
     else:
@@ -1541,6 +1547,8 @@ def isSplicingWindowInFrame(variant, exonicPortionSize, intronicPortionSize, deN
     Donor argument determines if function is used for de novo donor (donor=True) or de novo acceptor (donor=False)
     If ref and alt exon are in the same reading frame, returns True
     '''
+    # TO DO modify this to work for structural variants
+    # should just need to add check for variant type and then use SNS and structural variant functions accordingly
     refLength = getRefExonLength(variant, donor=donor)
     altLength = getAltExonLength(variant, exonicPortionSize, intronicPortionSize, deNovoDonorInRefAcc=deNovoDonorInRefAcc, donor=donor)
     return compareRefAltExonLengths(refLength, altLength)
@@ -1559,6 +1567,8 @@ def isDeNovoWildTypeSplicePosDistanceDivisibleByThree(variant, exonicPortionSize
        If it returns True, then de novo splicing would not cause a frameshift
        If it returns False, then de novo splicing would cause a frameshift
     '''
+    # TO DO likely will have to write new function to deal with structural variants
+    # will need to compare wild-type splice posiiton to 
     if varInExon(variant) == True:
         varExonNum = getVarExonNumberSNS(variant)
     else:
