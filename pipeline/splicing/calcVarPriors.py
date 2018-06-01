@@ -1044,7 +1044,7 @@ def getRefAltScores(refSeq, altSeq, donor=False):
                                "zScore": altZScore}}
     return scoreDict        
 
-def getMaxEntScanScoresSlidingWindowSNS(variant, windowSize, donor=False):
+def getMaxEntScanScoresSlidingWindow(variant, windowSize, donor=False, testMode=False):
     '''
     Given a variant and window size determines window sequences and scores for a sliding window
       that is the size of windowSize
@@ -1109,20 +1109,23 @@ def getMaxEntScanScoresSlidingWindowSNS(variant, windowSize, donor=False):
         altWindowSeq = altSeq[windowStart:windowEnd]
         windowSeqs[varPos] = {"refSeq": refWindowSeq,
                               "altSeq": altWindowSeq}
-        #pdb.set_trace()
-        refAltWindowScores = getRefAltScores(refWindowSeq, altWindowSeq, donor=donor)
-        windowScores[varPos] = {"refMaxEntScanScore": refAltWindowScores["refScores"]["maxEntScanScore"],
-                                "refZScore": refAltWindowScores["refScores"]["zScore"],
-                                "altMaxEntScanScore": refAltWindowScores["altScores"]["maxEntScanScore"],
-                                "altZScore": refAltWindowScores["altScores"]["zScore"]}
-        windowAltMaxEntScanScores[varPos] = refAltWindowScores["altScores"]["maxEntScanScore"]
+        if testMode == False:
+            refAltWindowScores = getRefAltScores(refWindowSeq, altWindowSeq, donor=donor)
+            windowScores[varPos] = {"refMaxEntScanScore": refAltWindowScores["refScores"]["maxEntScanScore"],
+                                    "refZScore": refAltWindowScores["refScores"]["zScore"],
+                                    "altMaxEntScanScore": refAltWindowScores["altScores"]["maxEntScanScore"],
+                                    "altZScore": refAltWindowScores["altScores"]["zScore"]}
+            windowAltMaxEntScanScores[varPos] = refAltWindowScores["altScores"]["maxEntScanScore"]
         varPos -= 1
         windowStart += 1
         windowEnd += 1
 
-    return {"windowSeqs": windowSeqs,
-            "windowScores": windowScores,
-            "windowAltMaxEntScanScores": windowAltMaxEntScanScores}
+    if testMode == False:
+        return {"windowSeqs": windowSeqs,
+                "windowScores": windowScores,
+                "windowAltMaxEntScanScores": windowAltMaxEntScanScores}
+    else:
+        return windowSeqs
 
 def getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, deNovoLength, donor=True, deNovo=False, deNovoDonorInRefAcc=False):
     '''
@@ -1148,10 +1151,10 @@ def getMaxMaxEntScanScoreSlidingWindowSNS(variant, exonicPortionSize, deNovoLeng
     # could modify function line 1061 so it includes "and getVarType(variant) == substitution"
     if donor == True:
         # uses default window size for a splice donor region
-        slidingWindowInfo = getMaxEntScanScoresSlidingWindowSNS(variant, STD_DONOR_SIZE, donor=donor)
+        slidingWindowInfo = getMaxEntScanScoresSlidingWindow(variant, STD_DONOR_SIZE, donor=donor, testMode=False)
     else:
         # uses default window size for a splice acceptor region
-        slidingWindowInfo = getMaxEntScanScoresSlidingWindowSNS(variant, STD_ACC_SIZE, donor=donor)
+        slidingWindowInfo = getMaxEntScanScoresSlidingWindow(variant, STD_ACC_SIZE, donor=donor, testMode=False)
     windowAltMaxEntScanScores = slidingWindowInfo["windowAltMaxEntScanScores"]
     # checks to see if variatn is within reference splice donor region
     inRefSpliceDonorRegion = varInSpliceRegion(variant, donor=True, deNovo=False)

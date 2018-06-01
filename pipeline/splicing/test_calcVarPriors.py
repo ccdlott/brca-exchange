@@ -3,6 +3,7 @@ import mock
 import calcVarPriors
 from calcVarPriors import STD_DONOR_INTRONIC_LENGTH, STD_DONOR_EXONIC_LENGTH, STD_ACC_INTRONIC_LENGTH, STD_ACC_EXONIC_LENGTH
 from calcVarPriors import STD_EXONIC_PORTION, STD_DE_NOVO_LENGTH, STD_DE_NOVO_OFFSET, BRCA1_RefSeq, BRCA2_RefSeq
+from calcVarPriors import STD_DONOR_SIZE, STD_ACC_SIZE
 import calcMaxEntScanMeanStd
 from calcVarPriorsMockedResponses import brca1Exons, brca2Exons 
 from calcVarPriorsMockedResponses import brca1RefSpliceDonorBounds, brca2RefSpliceDonorBounds 
@@ -133,7 +134,9 @@ class test_calcVarPriors(unittest.TestCase):
                         "Alt": "G",
                         "Gene_Symbol": "BRCA2",
                         "Reference_Sequence": "NM_000059.3",
-                        "HGVS_cDNA": "c.-764A>G"}
+                        "HGVS_cDNA": "c.-764A>G",
+                        "Hg38_Start": "32314943",
+                        "Hg38_End": "32314943"}
                   
     def test_checkSequence(self):
         '''Tests that checkSequence function categorized acceptable sequences correctly'''
@@ -4364,6 +4367,293 @@ class test_calcVarPriors(unittest.TestCase):
         maxEntScanScore = 8
         zScore = calcVarPriors.getZScore(maxEntScanScore, donor=False)
         self.assertGreater(zScore, 0)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO find example and fill in this unittest
+    def test_getMaxEntScanScoresSlidingWindowBRCA1SNS(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for SNS variant on minus strand gene (BRCA1)'''
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["HGVS_cDNA"] = ""
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["sub"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO find exampel and fill in this unittest
+    def test_getMaxEntScanScoresSlidingWindowBRCA2SNS(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for SNS variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = ""
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'TTTTTTAGATCTGATT',
+                                                               'refSeq': 'TTTTTTAGGATCTGATT'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA1Deletion1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for single bp deletion variant on minus strand gene (BRCA1)'''
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["HGVS_cDNA"] = "c.548delG"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["TTTTTTAGA", "TTTTTAGAT", "TTTTAGATC", "TTTAGATCT", "TTAGATCTG", "TAGATCTGA", "AGATCTGAT", "GATCTGATT"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'AACCAAATGTGTGAGT',
+                                                               'refSeq': 'AACCAAATAAATGTGTGAGT'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA1DeletionMoreThan1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for multiple bp deletion variant on minus strand gene (BRCA1)'''
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["HGVS_cDNA"] = "c.2398_2401delAAAT"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["AACCAAATG", "ACCAAATGT", "CCAAATGTG", "CAAATGTGT", "AAATGTGTG", "AATGTGTGA", "ATGTGTGAG", "TGTGTGAGT"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'CAGTGAAACTAAAATG',
+                                                               'refSeq': 'CAGTGAAAACTAAAATG'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA2Deletion1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for single bp deletion variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.364delA"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["CAGTGAAAC", "AGTGAAACT", "GTGAAACTA", "TGAAACTAA", "GAAACTAAA", "AAACTAAAA", "AACTAAAAT", "ACTAAAATG"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["del"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'CATTTTTTTAAGACAC',
+                                                               'refSeq': 'CATTTTTTGAAATTTTTAAGACAC'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA2DeletionMoreThan1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for multiple bp deletion variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.37_44delGAAATTTT"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["CATTTTTTT", "ATTTTTTTA", "TTTTTTTAA", "TTTTTTAAG", "TTTTTAAGA", "TTTTAAGAC", "TTTAAGACA", "TTAAGACAC"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'GGTATAATTGCAATGGAA',
+                                                               'refSeq': 'GGTATAATGCAATGGAA'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA1Insertion1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for single bp insertion variant on minus strand gene (BRCA1)'''
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["HGVS_cDNA"] = "c.4878dupT"
+        self.variant["Ref"] = "A"
+        self.variant["Alt"] = "AA"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["GGTATAATT", "GTATAATTG", "TATAATTGC", "ATAATTGCA", "TAATTGCAA", "AATTGCAAT", "ATTGCAATG",
+                              "TTGCAATGG", "TGCAATGGA"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'TGGTTCTTAGTTTACTAAGTGTT',
+                                                               'refSeq': 'TGGTTCTTTTACTAAGTGTT'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA1InsertionMoreThan1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for multiple bp insertion variant on minus strand gene (BRCA1)'''
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["HGVS_cDNA"] = "c.2125_2126insAGT"
+        self.variant["Ref"] = "A"
+        self.variant["Alt"] = "AACT"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["TGGTTCTTA", "GGTTCTTAG", "GTTCTTAGT", "TTCTTAGTT", "TCTTAGTTT", "CTTAGTTTA", "TTAGTTTAC",
+                              "TAGTTTACT", "AGTTTACTA", "GTTTACTAA", "TTTACTAAG"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'CAGACAGTCTTCAGTAAA',
+                                                               'refSeq': 'CAGACAGTTTCAGTAAA'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA2Insertion1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for single bp insertion variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.5607_5608insC"
+        self.variant["Ref"] = "T"
+        self.variant["Alt"] = "TC"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["CAGACAGTC", "AGACAGTCT", "GACAGTCTT", "ACAGTCTTC", "CAGTCTTCA", "AGTCTTCAG", "GTCTTCAGT",
+                              "TCTTCAGTA", "CTTCAGTAA"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'AGATTTTCCTTTACTTCAGA',
+                                                               'refSeq': 'AGATTTTCTTACTTCAGA'})
+    def test_getMaxEntScanScoresSlidingWindowBRCA2InsertionMoreThan1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for multiple bp insertion variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.1318_1319insCT"
+        self.variant["Ref"] = "C"
+        self.variant["Alt"] = "CCT"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["AGATTTTCC", "GATTTTCCT", "ATTTTCCTT", "TTTTCCTTT", "TTTCCTTTA", "TTCCTTTAC", "TCCTTTACT",
+                              "CCTTTACTT", "CTTTACTTC", "TTTACTTCA"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+    
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["ins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {'altSeq': 'TACACATGTGTAACACCACA',
+                                                               'refSeq': 'TACACATGTAACACCACA'})
+    # TO DO make this unittest work
+    # after fixing problem with multiple bp duplications, check to make sure value of getRefAltSeqs is correct
+    # also need to write unittest for multiple bp dubplication for BRCA1
+    def test_getMaxEntScanScoresSlidingWindowBRCA2DuplicationMoreThan1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for multiple bp insertion variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.451_452dupGT"
+        self.variant["Ref"] = "G"
+        self.variant["Alt"] = "GTG"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = ["ACACATGTG", "CACATGTGT", "ACATGTGTA", "CATGTGTAA", "ATGTGTAAC", "TGTGTAACA", "GTGTAACAC",
+                              "TGTAACACC", "GTAACACCA", "TAACACCAC"]
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO get this unittest to work
+    def test_getMaxEntScanScoresSlidingWindowBRCA1DelinsEqual(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for delins with equal number of bases inserted/deleted variant on minus strand gene (BRCA1)'''
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["HGVS_cDNA"] = "c.731_732delATinsCA"
+        self.variant["Ref"] = "AT"
+        self.variant["Alt"] = "TG"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO get this unittest to work
+    def test_getMaxEntScanScoresSlidingWindowBRCA1DelinsUnequal(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for delins with unequal number of bases inserted/deleted variant on minus strand gene (BRCA1)'''
+        self.variant["Gene_Symbol"] = "BRCA1"
+        self.variant["HGVS_cDNA"] = "c.5341_5343delGAAinsTG"
+        self.variant["Ref"] = "TTC"
+        self.variant["Alt"] = "CA"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "-")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO get this unittest to work
+    def test_getMaxEntScanScoresSlidingWindowBRCA1DelinsUnequal1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for delins with unequal number of bases inserted/deleted variant on minus strand gene (BRCA1)'''
+        # note here that length of bp inserted is 1 bp
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.4416_4417delTTinsG"
+        self.variant["Ref"] = "AA"
+        self.variant["Alt"] = "C"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO get this unittest to work
+    def test_getMaxEntScanScoresSlidingWindowBRCA2DelinsEqual(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for delins with equal number of bases inserted/deleted variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.4410_4412delAAGinsCAT"
+        self.variant["Ref"] = "AAG"
+        self.variant["Alt"] = "CAT"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO get this unittest to work
+    def test_getMaxEntScanScoresSlidingWindowBRCA2DelinsUnequal(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for delins with unequal number of bases inserted/deleted variant on plus strand gene (BRCA2)'''
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.9256_9256+2delinsACAG"
+        self.variant["Ref"] = "GGT"
+        self.variant["Alt"] = "ACAG"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
+
+    @mock.patch('calcVarPriors.getVarStrand', return_value = "+")
+    @mock.patch('calcVarPriors.getVarType', return_value = varTypes["delins"])
+    @mock.patch('calcVarPriors.getRefAltSeqs', return_value = {})
+    # TO DO get this unittest to work
+    def test_getMaxEntScanScoresSlidingWindowBRCA2DelinsUnequal1bp(self, getVarStrand, getVarType, getRefAltSeqs):
+        '''Tests that function works for delins with unequal number of bases inserted/deleted variant on plus strand gene (BRCA2)'''
+        # note here that length of bp deleted is 1 bp
+        self.variant["Gene_Symbol"] = "BRCA2"
+        self.variant["HGVS_cDNA"] = "c.1225delGinsTTT"
+        self.variant["Ref"] = "G"
+        self.variant["Alt"] = "TTT"
+        windowSeqs = calcVarPriors.getMaxEntScanScoresSlidingWindow(self.variant, STD_DONOR_SIZE, donor=True, testMode=True)
+        expectedAltSeqList = []
+        self.assertEquals(len(windowSeqs), len(expectedAltSeqList))
+        for varPos in windowSeqs.keys():
+            windowAltSeq = windowSeqs[varPos]["altSeq"]
+            self.assertIn(windowAltSeq, expectedAltSeqList)
 
     @mock.patch('calcVarPriors.getMaxMaxEntScanScoreSlidingWindowSNS', return_value = {"inExonicPortion": True})
     def test_varInExonicPortionTrue(self, getMaxMaxEntScanScoreSlidingWindowSNS):
